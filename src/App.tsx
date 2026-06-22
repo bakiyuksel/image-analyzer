@@ -5,6 +5,7 @@ import { processImage } from './lib/transforms'
 import DropZone from './components/DropZone'
 import ViewGrid from './components/ViewGrid'
 import Lightbox from './components/Lightbox'
+import PredictionPanel from './components/PredictionPanel'
 
 export default function App() {
   const [views, setViews] = useState<ProcessedView[]>([])
@@ -55,7 +56,10 @@ export default function App() {
         ) : views.length === 0 ? (
           <DropZone onFile={handleFile} />
         ) : (
-          <ViewGrid views={views} onPanelClick={setLightboxId} />
+          <>
+            <ViewGrid views={views} onPanelClick={setLightboxId} />
+            <PredictionPanel views={views} />
+          </>
         )}
       </main>
 
