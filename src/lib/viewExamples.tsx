@@ -1,6 +1,6 @@
 import type { Lang } from './i18n'
 
-const T = '#3282B8'   // blue accent
+const T = '#E84545'   // red accent
 const R = '#ef4444'   // red alert
 const A = '#f59e0b'   // amber warn
 const G = '#10b981'   // green ok
@@ -11,7 +11,7 @@ const nl = (lang: Lang) => lang === 'nl'
 function Frame({ children, h = 160 }: { children: React.ReactNode; h?: number }) {
   return (
     <svg viewBox={`0 0 280 ${h}`} xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[280px] rounded-xl border border-rim/40">
-      <rect width="280" height={h} fill="#1B262C" rx="10"/>
+      <rect width="280" height={h} fill="#2B2E4A" rx="10"/>
       {children}
     </svg>
   )
