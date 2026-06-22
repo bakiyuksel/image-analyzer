@@ -12,8 +12,8 @@ interface ExifData {
   DateTimeOriginal?: Date | string
   DateTimeDigitized?: Date | string
   DateTime?: Date | string
-  GPSLatitude?: number
-  GPSLongitude?: number
+  GPSLatitude?: number | number[]
+  GPSLongitude?: number | number[]
   GPSDateStamp?: string
   ColorSpace?: number
   ExifImageWidth?: number
@@ -34,6 +34,12 @@ function parseExifDate(d: Date | string | undefined): number | null {
   const normalized = String(d).replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
   const t = new Date(normalized).getTime()
   return isNaN(t) ? null : t
+}
+
+function toDecimalDeg(val: number | number[] | undefined): number | null {
+  if (val == null) return null
+  if (typeof val === 'number') return val
+  return val[0] + (val[1] ?? 0) / 60 + (val[2] ?? 0) / 3600
 }
 
 function formatDate(d: Date | string | undefined, locale: string): string {
@@ -165,7 +171,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
     [TE.rowLabels.captureDate, formatDate(exif.DateTimeOriginal, TE.locale)],
     [TE.rowLabels.digitizationDate, formatDate(exif.DateTimeDigitized, TE.locale)],
     [TE.rowLabels.fileDate, formatDate(exif.DateTime, TE.locale)],
-    [TE.rowLabels.gps, exif.GPSLatitude != null ? `${exif.GPSLatitude.toFixed(5)}, ${exif.GPSLongitude?.toFixed(5)}` : '—'],
+    [TE.rowLabels.gps, (() => { const lat = toDecimalDeg(exif.GPSLatitude); const lon = toDecimalDeg(exif.GPSLongitude); return lat != null ? `${lat.toFixed(5)}, ${lon?.toFixed(5) ?? '—'}` : '—' })()],
     [TE.rowLabels.colorSpace, colorSpaceLabel(exif.ColorSpace)],
     [TE.rowLabels.dimensions, exif.ExifImageWidth ? `${exif.ExifImageWidth} × ${exif.ExifImageHeight}` : '—'],
   ] : []
