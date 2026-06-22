@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle, ImageOff } from 'lucide-react'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
 import type { Lang } from '../lib/i18n'
+import GpsMap from './GpsMap'
 
 interface ExifData {
   Make?: string
@@ -152,6 +153,8 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
 
   const thumbMismatch = false
   const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch, file.lastModified, lang)
+  const gpsLat = exif ? toDecimalDeg(exif.GPSLatitude) : null
+  const gpsLng = exif ? toDecimalDeg(exif.GPSLongitude) : null
 
   const LEVEL_ICON = {
     alert: <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />,
@@ -231,6 +234,13 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
             </div>
           )}
         </div>
+
+        {gpsLat != null && gpsLng != null && (
+          <div className="mt-6 max-w-2xl">
+            <p className="text-xs text-muted uppercase tracking-wide mb-2">GPS</p>
+            <GpsMap lat={gpsLat} lng={gpsLng} />
+          </div>
+        )}
       )}
     </div>
   )
