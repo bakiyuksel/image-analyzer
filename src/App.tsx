@@ -9,13 +9,17 @@ import Lightbox from './components/Lightbox'
 export default function App() {
   const [views, setViews] = useState<ProcessedView[]>([])
   const [lightboxId, setLightboxId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleFile = useCallback((file: File) => {
     const objectUrl = URL.createObjectURL(file)
     const img = new Image()
-    img.onload = () => {
-      setViews(processImage(img))
+    img.onload = async () => {
+      setLoading(true)
+      const processed = await processImage(img)
       URL.revokeObjectURL(objectUrl)
+      setViews(processed)
+      setLoading(false)
     }
     img.src = objectUrl
   }, [])
@@ -43,10 +47,16 @@ export default function App() {
       </header>
 
       <main className="p-6">
-        {views.length === 0
-          ? <DropZone onFile={handleFile} />
-          : <ViewGrid views={views} onPanelClick={setLightboxId} />
-        }
+        {loading ? (
+          <div className="flex flex-col items-center justify-center min-h-[70vh] gap-4 text-muted">
+            <div className="w-8 h-8 border-2 border-rim border-t-accent rounded-full animate-spin" />
+            <p className="text-sm">Views genereren…</p>
+          </div>
+        ) : views.length === 0 ? (
+          <DropZone onFile={handleFile} />
+        ) : (
+          <ViewGrid views={views} onPanelClick={setLightboxId} />
+        )}
       </main>
 
       {lightboxView !== null && (

@@ -4,6 +4,7 @@ export interface ViewDefinition {
   description: string
   cssFilter?: string
   canvasTransform?: (data: ImageData) => ImageData
+  asyncTransform?: (img: HTMLImageElement) => Promise<string>
 }
 
 export interface ProcessedView {
