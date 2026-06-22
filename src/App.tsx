@@ -15,6 +15,7 @@ import ExportPanel from './components/ExportPanel'
 import ConsentBanner from './components/ConsentBanner'
 import NotFound from './components/NotFound'
 import VerdictBanner from './components/VerdictBanner'
+import UrlModal from './components/UrlModal'
 import { Analytics } from '@vercel/analytics/react'
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
   const [file, setFile] = useState<File | null>(null)
   const [lightboxId, setLightboxId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isUrlModalOpen, setIsUrlModalOpen] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
 
   const handleFile = useCallback((f: File) => {
@@ -52,13 +54,15 @@ export default function App() {
   }, [])
 
   const handleUrl = useCallback(async (url: string) => {
+    setIsUrlModalOpen(false)
     setUrlError(null)
     setLoading(true)
     try {
       const res = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`)
       if (res.status === 422) {
         setLoading(false)
-        setUrlError(T.dropzone.urlError.cors)
+        setUrlError(T.urlModal.errorNotImage)
+        setIsUrlModalOpen(true)
         return
       }
       if (!res.ok) throw new Error('http')
@@ -67,9 +71,14 @@ export default function App() {
       handleFile(new File([blob], name, { type: blob.type }))
     } catch {
       setLoading(false)
-      setUrlError(T.dropzone.urlError.failed)
+      setUrlError(T.urlModal.errorFailed)
+      setIsUrlModalOpen(true)
     }
-  }, [handleFile, T.dropzone.urlError])
+  }, [handleFile, T.urlModal])
+
+  useEffect(() => {
+    if (views.length > 0) setIsUrlModalOpen(false)
+  }, [views.length])
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -146,7 +155,7 @@ export default function App() {
             <p className="text-sm">{T.app.loading}</p>
           </div>
         ) : views.length === 0 ? (
-          <DropZone onFile={handleFile} onUrl={handleUrl} urlError={urlError} />
+          <DropZone onFile={handleFile} onOpenUrlModal={() => setIsUrlModalOpen(true)} />
         ) : (
           <>
             <VerdictBanner views={views} />
@@ -166,6 +175,14 @@ export default function App() {
 
       {lightboxView !== null && (
         <Lightbox view={lightboxView} onClose={() => setLightboxId(null)} />
+      )}
+
+      {isUrlModalOpen && (
+        <UrlModal
+          onClose={() => { setIsUrlModalOpen(false); setUrlError(null) }}
+          onSubmit={handleUrl}
+          error={urlError}
+        />
       )}
 
       <ConsentBanner />

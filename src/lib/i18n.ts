@@ -11,12 +11,15 @@ export const translations = {
       headline: 'Sleep een afbeelding hierheen',
       hint: 'of plak (Ctrl+V) — JPG, PNG, WebP, AVIF',
       uploadButton: 'Bladeren',
-      urlPlaceholder: 'Of plak een afbeelding-URL…',
-      urlLoad: 'Laden',
-      urlError: {
-        cors: 'Dit lijkt geen directe afbeelding-URL. Rechts-klik op de afbeelding → "Afbeelding-adres kopiëren".',
-        failed: 'Kon de afbeelding niet ophalen. Controleer of de URL nog geldig is.',
-      },
+      urlButton: 'URL plakken',
+    },
+    urlModal: {
+      title: 'Afbeelding-URL',
+      placeholder: 'https://…',
+      load: 'Laden',
+      cancel: 'Annuleren',
+      errorNotImage: 'Dit lijkt geen directe afbeelding-URL. Rechts-klik op de afbeelding → "Afbeelding-adres kopiëren".',
+      errorFailed: 'Kon de afbeelding niet ophalen. Controleer of de URL nog geldig is.',
     },
     lightbox: {
       close: 'Sluiten (Escape)',
@@ -120,12 +123,15 @@ export const translations = {
       headline: 'Drop an image here',
       hint: 'or paste (Ctrl+V) — JPG, PNG, WebP, AVIF',
       uploadButton: 'Browse files',
-      urlPlaceholder: 'Or paste an image URL…',
-      urlLoad: 'Load',
-      urlError: {
-        cors: 'This doesn\'t look like a direct image URL. Right-click the image → "Copy image address".',
-        failed: "Couldn't fetch the image. Check if the URL is still valid.",
-      },
+      urlButton: 'Paste URL',
+    },
+    urlModal: {
+      title: 'Image URL',
+      placeholder: 'https://…',
+      load: 'Load',
+      cancel: 'Cancel',
+      errorNotImage: 'This doesn\'t look like a direct image URL. Right-click the image → "Copy image address".',
+      errorFailed: "Couldn't fetch the image. Check if the URL is still valid.",
     },
     lightbox: {
       close: 'Close (Escape)',
