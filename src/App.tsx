@@ -128,7 +128,7 @@ export default function App() {
                 onClick={() => setLang(l)}
                 className={`text-xs px-2.5 py-1 rounded-md transition-all ${
                   lang === l
-                    ? 'bg-accent text-white font-medium'
+                    ? 'bg-green-700 text-white font-medium'
                     : 'text-muted hover:text-fg'
                 }`}
               >
