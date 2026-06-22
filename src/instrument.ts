@@ -7,12 +7,18 @@ export function initSentry() {
     environment: import.meta.env.MODE,
     integrations: [
       Sentry.browserTracingIntegration(),
+      Sentry.browserProfilingIntegration(),
       Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
       }),
+      Sentry.consoleLoggingIntegration({
+        levels: ['warn', 'error'],
+      }),
     ],
     tracesSampleRate: 1.0,
+    profileSessionSampleRate: 1.0,
+    profileLifecycle: 'trace',
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     enableLogs: true,

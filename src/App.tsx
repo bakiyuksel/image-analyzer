@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import * as Sentry from '@sentry/react'
 import { RefreshCw } from 'lucide-react'
 import type { ProcessedView } from './types/image'
 import { processImage } from './lib/transforms'
@@ -31,10 +32,19 @@ export default function App() {
     const img = new Image()
     img.onload = async () => {
       setLoading(true)
+      const start = performance.now()
       const processed = await processImage(img)
+      const durationMs = Math.round(performance.now() - start)
       URL.revokeObjectURL(objectUrl)
       setViews(processed)
       setLoading(false)
+      Sentry.logger.info('Image analyzed', {
+        fileName: f.name,
+        fileSize: f.size,
+        fileType: f.type,
+        viewCount: processed.length,
+        durationMs,
+      })
     }
     img.src = objectUrl
   }, [])
