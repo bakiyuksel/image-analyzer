@@ -3,6 +3,7 @@ import { X, ZoomIn } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
 import { useLang } from '../lib/lang-context'
 import { translations, viewDescriptions } from '../lib/i18n'
+import { getViewExample } from '../lib/viewExamples'
 
 interface Props {
   view: ProcessedView
@@ -16,6 +17,7 @@ export default function Lightbox({ view, onClose }: Props) {
   const { lang } = useLang()
   const T = translations[lang].lightbox
   const description = viewDescriptions[view.definition.id]?.[lang] ?? view.definition.description
+  const example = getViewExample(view.definition.id, lang)
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const dragging = useRef(false)
@@ -128,11 +130,19 @@ export default function Lightbox({ view, onClose }: Props) {
           />
         </div>
 
-        <div className="text-center border-t border-rim/50 pt-4 w-full">
-          <p className="text-accent font-semibold text-base mb-1">{view.definition.name}</p>
-          <p className="text-fg/70 text-sm max-w-lg mx-auto leading-relaxed">
+        <div className="border-t border-rim/50 pt-4 w-full">
+          <p className="text-accent font-semibold text-base mb-1 text-center">{view.definition.name}</p>
+          <p className="text-fg/70 text-sm max-w-lg mx-auto leading-relaxed text-center">
             {description}
           </p>
+          {example && (
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">
+                {lang === 'nl' ? 'Verdacht patroon (illustratie)' : 'Suspicious pattern (illustration)'}
+              </p>
+              <div className="w-full max-w-[280px]">{example}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>

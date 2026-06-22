@@ -228,63 +228,63 @@ export const translations = {
 
 export const viewDescriptions: Record<string, { nl: string; en: string }> = {
   original: {
-    nl: 'Referentieafbeelding. Vergelijk elke andere view hiermee om afwijkingen te spotten.',
-    en: 'Reference image. Compare every other view against this to spot anomalies.',
+    nl: 'Referentieafbeelding. Vergelijk elke andere view hiermee om afwijkingen te spotten. Let op: schaduwrichting ten opzichte van de lichtbron, perspectief-inconsistenties tussen objecten, en randen die te scherp of te glad zijn voor de omgeving.',
+    en: 'Reference image. Compare every other view against this to spot anomalies. Look for: shadow direction vs. the light source, perspective inconsistencies between objects, and edges that are unnaturally sharp or smooth for the scene.',
   },
   ela: {
-    nl: 'Error Level Analysis — herslaat de foto als JPEG en vergroot het verschil 20×. Bewerkte zones compressen anders en lichten op als heldere vlekken. De sterkste tool voor het detecteren van copy-paste, retouche en compositing.',
-    en: 'Error Level Analysis — re-saves the image as JPEG and amplifies the difference 20×. Edited zones compress differently and appear as bright spots. The strongest tool for detecting copy-paste, retouching, and compositing.',
+    nl: 'Error Level Analysis — herslaat de foto als JPEG en vergroot het verschil 20×. Bewerkte zones compressen anders en lichten op als heldere vlekken. De sterkste tool voor het detecteren van copy-paste, retouche en compositing. Let op: heldere vlekken of zones — hoe feller, hoe sterker het bewijs. Donkere uniforme gebieden zijn origineel. Vergelijk de helderheid van het verdachte object met de achtergrond.',
+    en: 'Error Level Analysis — re-saves the image as JPEG and amplifies the difference 20×. Edited zones compress differently and appear as bright spots. The strongest tool for detecting copy-paste, retouching, and compositing. Look for: bright spots or zones — the brighter, the stronger the evidence. Dark uniform areas are original. Compare the brightness of the suspected object with its surroundings.',
   },
   'noise-map': {
-    nl: 'Isoleert de ruislaag via high-pass filtering. Kloonstempels, inpainting en AI-gebieden missen de organische ruis van de camera — die zones verschijnen hier als te glad of met een afwijkend patroon.',
-    en: 'Isolates the noise layer via high-pass filtering. Clone stamps, inpainting, and AI-generated areas lack the organic camera noise — those zones appear too smooth or with a deviating pattern.',
+    nl: 'Isoleert de ruislaag via high-pass filtering. Kloonstempels, inpainting en AI-gebieden missen de organische ruis van de camera — die zones verschijnen hier als te glad of met een afwijkend patroon. Let op: te gladde vlakken te midden van organische ruis, of een gebied met duidelijk grover of fijner ruis dan de rest.',
+    en: 'Isolates the noise layer via high-pass filtering. Clone stamps, inpainting, and AI-generated areas lack the organic camera noise — those zones appear too smooth or with a deviating pattern. Look for: areas that are too smooth compared to surrounding noise, or a region with clearly coarser or finer grain than the rest.',
   },
   sobel: {
-    nl: "Sobel-operator berekent de gradiëntsterkte per pixel. Onnatuurlijk scherpe randen op logisch zachte plekken, of halo's rond ingeplakte objecten, zijn directe tekenen van compositing.",
-    en: "Sobel operator computes gradient magnitude per pixel. Unnaturally sharp edges in logically soft areas, or halos around pasted objects, are direct signs of compositing.",
+    nl: "Sobel-operator berekent de gradiëntsterkte per pixel. Onnatuurlijk scherpe randen op logisch zachte plekken, of halo's rond ingeplakte objecten, zijn directe tekenen van compositing. Let op: dubbele of dikkere randen (halo) rondom objecten die er normaal uitknipbaar uitzien — klassiek teken van copy-paste compositing.",
+    en: "Sobel operator computes gradient magnitude per pixel. Unnaturally sharp edges in logically soft areas, or halos around pasted objects, are direct signs of compositing. Look for: double or thickened edges (halos) around objects that appear cut-out — a classic sign of copy-paste compositing.",
   },
   negative: {
-    nl: 'Alle tonen omgekeerd. Retoucheringen en zachte blending die in het origineel onzichtbaar zijn kunnen als toonverschillen oplichten.',
-    en: 'All tones inverted. Retouching and soft blending invisible in the original may appear as tone differences here.',
+    nl: 'Alle tonen omgekeerd. Retoucheringen en zachte blending die in het origineel onzichtbaar zijn kunnen als toonverschillen oplichten. Let op: vlekken, banden of toonverschillen die in het origineel niet zichtbaar waren — zachte retouche of healing brush laat hier vaak sporen na.',
+    en: 'All tones inverted. Retouching and soft blending invisible in the original may appear as tone differences here. Look for: spots, bands, or tonal patches not visible in the original — soft retouching or healing brush often leaves traces here.',
   },
   grayscale: {
-    nl: 'Puur luminantiepatroon zonder kleur. Inconsistente belichting tussen object en achtergrond — verrader van compositing — is hier makkelijker te zien.',
-    en: 'Pure luminance pattern without color. Inconsistent lighting between object and background — a telltale sign of compositing — is easier to spot here.',
+    nl: 'Puur luminantiepatroon zonder kleur. Inconsistente belichting tussen object en achtergrond — verrader van compositing — is hier makkelijker te zien. Let op: een object dat te licht of te donker is voor de omgeving, of een schaduw die de verkeerde richting opgaat.',
+    en: 'Pure luminance pattern without color. Inconsistent lighting between object and background — a telltale sign of compositing — is easier to spot here. Look for: an object that is too bright or too dark for its surroundings, or a shadow going the wrong direction.',
   },
   'high-contrast': {
-    nl: 'Contrast extreem opgevoerd. Onlogische lichtrichting, zachte schaduwen die niet passen of kunstmatig vloeiende overgangen zijn hier duidelijker zichtbaar.',
-    en: 'Contrast pushed to extremes. Illogical light direction, mismatched soft shadows, or artificially smooth transitions are more visible here.',
+    nl: 'Contrast extreem opgevoerd. Onlogische lichtrichting, zachte schaduwen die niet passen of kunstmatig vloeiende overgangen zijn hier duidelijker zichtbaar. Let op: de schaduw die een object werpt — klopt de richting met de lichtbron? Objecten die te "zweven" lijken of randen zonder overgangsschaduw.',
+    en: 'Contrast pushed to extremes. Illogical light direction, mismatched soft shadows, or artificially smooth transitions are more visible here. Look for: shadow direction — does it match the light source? Objects that appear to float, or edges with no transition shadow.',
   },
   hue: {
-    nl: 'Kleurschakering (H uit HSV) als grijswaarden. Selectieve kleurveranderingen vallen op als blokken met een te uniforme of abrupt veranderende hue.',
-    en: 'Hue (H from HSV) as grayscale. Selective color edits stand out as blocks with an unnaturally uniform or abruptly shifting hue.',
+    nl: 'Kleurschakering (H uit HSV) als grijswaarden. Selectieve kleurveranderingen vallen op als blokken met een te uniforme of abrupt veranderende hue. Let op: rechthoekige zones met een duidelijk andere grijswaarde te midden van variërend omliggend materiaal — dit wijst op selectieve kleurcorrectie of een ingeplakt element.',
+    en: 'Hue (H from HSV) as grayscale. Selective color edits stand out as blocks with an unnaturally uniform or abruptly shifting hue. Look for: rectangular zones with a clearly different gray value amid varying surrounding material — this indicates selective color correction or a pasted element.',
   },
   saturation: {
-    nl: 'Verzadiging (S uit HSV) als grijswaarden. Lokaal opgedraaide of verlaagde verzadiging en selective color zijn hier direct zichtbaar.',
-    en: 'Saturation (S from HSV) as grayscale. Locally boosted or reduced saturation and selective color edits are directly visible here.',
+    nl: 'Verzadiging (S uit HSV) als grijswaarden. Lokaal opgedraaide of verlaagde verzadiging en selective color zijn hier direct zichtbaar. Let op: lokale pieken — sterk heldere zones wijzen op overdreven verzadiging, zwarte zones op volledig ontverzadigde gebieden. Beide kunnen duiden op selectieve nabewerking.',
+    en: 'Saturation (S from HSV) as grayscale. Locally boosted or reduced saturation and selective color edits are directly visible here. Look for: local spikes — very bright zones indicate heavy saturation boosts, black zones indicate fully desaturated areas. Both can indicate selective post-processing.',
   },
   'clone-detect': {
-    nl: "Heuristiek voor copy-move detectie — vergelijkt overlappende 16×16 blokken op gelijkenis en markeert verdachte kopieën in rood. Uniforme gebieden (hemel, muur) kunnen false positives geven. Combineer altijd met ELA voor bevestiging.",
-    en: 'Copy-move detection heuristic — compares overlapping 16×16 blocks for similarity and marks suspected copies in red. Uniform areas (sky, walls) can produce false positives. Always combine with ELA for confirmation.',
+    nl: "Heuristiek voor copy-move detectie — vergelijkt overlappende 16×16 blokken op gelijkenis en markeert verdachte kopieën in rood. Uniforme gebieden (hemel, muur) kunnen false positives geven. Combineer altijd met ELA voor bevestiging. Let op: rode markeringen op geometrisch logische plaatsen — een kloon volgt een herhaalpatroon. Negeer markeringen op grote uniforme vlakken zoals hemel, gras of muren.",
+    en: 'Copy-move detection heuristic — compares overlapping 16×16 blocks for similarity and marks suspected copies in red. Uniform areas (sky, walls) can produce false positives. Always combine with ELA for confirmation. Look for: red markers at geometrically logical positions — a real clone follows a repeating pattern. Ignore markers on large uniform areas like sky, grass, or walls.',
   },
   'red-channel': {
-    nl: 'Alleen rode kleurdata. Ingeplakte elementen van een andere camera hebben een afwijkend ruispatroon — vergelijk de textuur van het verdachte object met de achtergrond.',
-    en: 'Red color channel only. Pasted elements from a different camera have a deviating noise pattern — compare the texture of the suspected object with the background.',
+    nl: 'Alleen rode kleurdata. Ingeplakte elementen van een andere camera hebben een afwijkend ruispatroon — vergelijk de textuur van het verdachte object met de achtergrond. Let op: een zone waar het grain duidelijk anders is dan de omgeving — meer of minder grofkorrelig. Camera-ruis is consistent over de hele sensor.',
+    en: 'Red color channel only. Pasted elements from a different camera have a deviating noise pattern — compare the texture of the suspected object with the background. Look for: a zone where the grain is clearly different from the surroundings — coarser or finer. Camera noise is consistent across the entire sensor.',
   },
   'green-channel': {
-    nl: 'Groen kanaal — het schoonste kanaal. Inconsistenties in ruis of scherpte die hier zichtbaar zijn maar niet in andere kanalen wijzen op een verschillende opnamebron.',
-    en: 'Green channel — the cleanest channel. Inconsistencies in noise or sharpness visible here but not in other channels point to a different capture source.',
+    nl: 'Groen kanaal — het schoonste kanaal. Inconsistenties in ruis of scherpte die hier zichtbaar zijn maar niet in andere kanalen wijzen op een verschillende opnamebron. Let op: een object of zone met duidelijk afwijkende textuur of grain ten opzichte van de achtergrond — ingeplakt materiaal heeft altijd een andere ruisstructuur.',
+    en: 'Green channel — the cleanest channel. Inconsistencies in noise or sharpness visible here but not in other channels point to a different capture source. Look for: an object or zone with clearly deviating texture or grain compared to the background — pasted material always has a different noise structure.',
   },
   'blue-channel': {
-    nl: 'Blauw kanaal — bevat het meeste sensorruis. Compositing van beelden van verschillende bronnen is hier het makkelijkst te herkennen aan een abrupt veranderend ruispatroon.',
-    en: 'Blue channel — contains the most sensor noise. Compositing images from different sources is easiest to detect here through an abruptly changing noise pattern.',
+    nl: 'Blauw kanaal — bevat het meeste sensorruis. Compositing van beelden van verschillende bronnen is hier het makkelijkst te herkennen aan een abrupt veranderend ruispatroon. Let op: een zone met duidelijk minder of meer grain dan de omgeving — het blauwe kanaal vergroot ruisver schillen het sterkst en maakt inhomogeniteit het best zichtbaar.',
+    en: 'Blue channel — contains the most sensor noise. Compositing images from different sources is easiest to detect here through an abruptly changing noise pattern. Look for: a zone with clearly less or more grain than the surroundings — the blue channel amplifies noise differences the most and makes inhomogeneity most visible.',
   },
   'jpeg-ghost': {
-    nl: 'Comprimeert de afbeelding op 6 kwaliteitsniveaus en vergelijkt per pixel welk niveau het best aansluit. Authentieke gebieden clusteren rond één kwaliteitsniveau (donker). Ingeplakte elementen van een andere bron — anders gecomprimeerd — lichten op in oranje-rood.',
-    en: 'Compresses the image at 6 quality levels and compares per pixel which level fits best. Authentic areas cluster around one quality level (dark). Pasted elements from a different source — compressed differently — light up in orange-red.',
+    nl: 'Comprimeert de afbeelding op 6 kwaliteitsniveaus en vergelijkt per pixel welk niveau het best aansluit. Authentieke gebieden clusteren rond één kwaliteitsniveau (donker). Ingeplakte elementen van een andere bron — anders gecomprimeerd — lichten op in oranje-rood. Let op: oranje of rood oplichtende vlekken of zones. Hoe feller de kleur, hoe groter het verschil in JPEG-kwaliteit — sterke aanwijzing dat het gebied van een andere afbeelding afkomstig is.',
+    en: 'Compresses the image at 6 quality levels and compares per pixel which level fits best. Authentic areas cluster around one quality level (dark). Pasted elements from a different source — compressed differently — light up in orange-red. Look for: orange or red glowing spots or zones. The brighter the color, the greater the JPEG quality difference — strong evidence the area came from a different image.',
   },
   'fft-spectrum': {
-    nl: 'Frequentiedomein via 2D Fourier-transformatie. Het spectrum toont de verdeling van ruimtelijke frequenties. AI-gegenereerde beelden en upscaling tonen afwijkende patronen. Periodieke stippen of lijnen wijzen op tiling, interpolatie-artefacten of herhalende textuurpatronen.',
-    en: 'Frequency domain via 2D Fourier transform. The spectrum shows the distribution of spatial frequencies. AI-generated images and upscaling show deviating patterns. Periodic dots or lines indicate tiling, interpolation artifacts, or repeating texture patterns.',
+    nl: 'Frequentiedomein via 2D Fourier-transformatie. Het spectrum toont de verdeling van ruimtelijke frequenties. AI-gegenereerde beelden en upscaling tonen afwijkende patronen. Periodieke stippen of lijnen wijzen op tiling, interpolatie-artefacten of herhalende textuurpatronen. Let op: regelmatig verdeelde stippen of extra horizontale/verticale lijnen buiten het centrale kruis. Een normaal beeld toont alleen het kruis in het midden — alles extra is verdacht.',
+    en: 'Frequency domain via 2D Fourier transform. The spectrum shows the distribution of spatial frequencies. AI-generated images and upscaling show deviating patterns. Periodic dots or lines indicate tiling, interpolation artifacts, or repeating texture patterns. Look for: evenly spaced dots or extra horizontal/vertical lines outside the central cross. A normal image shows only the center cross — anything extra is suspicious.',
   },
 }
