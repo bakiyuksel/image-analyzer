@@ -79,6 +79,11 @@ export const translations = {
       subtitle: 'Scores en bestandsinfo als JSON',
       button: 'Download rapport',
     },
+    consent: {
+      message: 'Deze app gebruikt Sentry voor foutrapportage en sessie-opnames om de kwaliteit te verbeteren. Er worden geen afbeeldingen verstuurd — alleen technische fout- en sessiedata.',
+      accept: 'Accepteren',
+      decline: 'Weigeren',
+    },
   },
 
   en: {
@@ -158,6 +163,11 @@ export const translations = {
       heading: 'Export',
       subtitle: 'Scores and file info as JSON',
       button: 'Download report',
+    },
+    consent: {
+      message: 'This app uses Sentry for error reporting and session recording to improve quality. No images are sent — only technical error and session data.',
+      accept: 'Accept',
+      decline: 'Decline',
     },
   },
 } as const

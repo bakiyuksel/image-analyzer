@@ -11,6 +11,7 @@ import PredictionPanel from './components/PredictionPanel'
 import ExifPanel from './components/ExifPanel'
 import HistogramPanel from './components/HistogramPanel'
 import ExportPanel from './components/ExportPanel'
+import ConsentBanner from './components/ConsentBanner'
 
 export default function App() {
   const { lang, setLang } = useLang()
@@ -100,6 +101,8 @@ export default function App() {
       {lightboxView !== null && (
         <Lightbox view={lightboxView} onClose={() => setLightboxId(null)} />
       )}
+
+      <ConsentBanner />
     </div>
   )
 }
