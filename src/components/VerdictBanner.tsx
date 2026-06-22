@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
 import { useLang } from '../lib/lang-context'
@@ -33,33 +34,42 @@ const STYLES = {
   alert: {
     border: 'border-red-500/30',
     bg: 'bg-red-950/20',
-    glow: 'shadow-red-950/50',
     bar: 'bg-gradient-to-r from-red-600 to-red-400',
     icon: <ShieldAlert size={22} className="text-red-400" />,
     iconBg: 'bg-red-950/60',
     title: 'text-red-300',
-    score: 'text-red-300',
   },
   warn: {
     border: 'border-yellow-500/30',
     bg: 'bg-yellow-950/20',
-    glow: 'shadow-yellow-950/50',
     bar: 'bg-gradient-to-r from-yellow-600 to-yellow-400',
     icon: <ShieldQuestion size={22} className="text-yellow-400" />,
     iconBg: 'bg-yellow-950/60',
     title: 'text-yellow-300',
-    score: 'text-yellow-300',
   },
   ok: {
     border: 'border-emerald-500/30',
     bg: 'bg-emerald-950/20',
-    glow: 'shadow-emerald-950/50',
     bar: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
     icon: <ShieldCheck size={22} className="text-emerald-400" />,
     iconBg: 'bg-emerald-950/60',
     title: 'text-emerald-300',
-    score: 'text-emerald-300',
   },
+}
+
+function useCountUp(target: number, duration = 900) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    const start = performance.now()
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setDisplay(Math.round(eased * target))
+      if (p < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [target, duration])
+  return display
 }
 
 export default function VerdictBanner({ views }: Props) {
@@ -67,9 +77,10 @@ export default function VerdictBanner({ views }: Props) {
   const T = translations[lang].verdict
   const { level, score } = computeVerdict(views)
   const S = STYLES[level]
+  const displayScore = useCountUp(score)
 
   return (
-    <div className={`rounded-2xl border ${S.border} ${S.bg} shadow-xl ${S.glow} overflow-hidden mb-8`}>
+    <div className={`animate-fade-in-up rounded-2xl border ${S.border} ${S.bg} overflow-hidden mb-8`}>
       <div className="px-6 py-5">
         <div className="flex items-center gap-4 mb-4">
           <div className={`p-2.5 rounded-xl ${S.iconBg} shrink-0`}>
@@ -77,17 +88,17 @@ export default function VerdictBanner({ views }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`text-base font-semibold ${S.title}`}>{T[level]}</p>
-            <p className="text-xs text-muted mt-0.5 leading-relaxed line-clamp-2">{T.subtext[level]}</p>
+            <p className="text-xs text-muted mt-0.5 leading-relaxed">{T.subtext[level]}</p>
           </div>
           <div className="text-right shrink-0">
-            <p className={`text-4xl font-bold tabular-nums ${S.score}`}>{score}</p>
+            <p className={`text-4xl font-bold tabular-nums ${S.title}`}>{displayScore}</p>
             <p className="text-xs text-muted">/ 100</p>
           </div>
         </div>
         <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
           <div
             className={`h-full ${S.bar} rounded-full transition-all duration-700`}
-            style={{ width: `${score}%` }}
+            style={{ width: `${displayScore}%` }}
           />
         </div>
       </div>

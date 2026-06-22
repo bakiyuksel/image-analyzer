@@ -82,7 +82,11 @@ export default function PredictionPanel({ views }: Props) {
         {predictions.map((p, i) => {
           const s = LEVEL_STYLES[p.level]
           return (
-            <div key={i} className={`flex gap-3 px-4 py-3.5 rounded-xl border ${s.border} ${s.bg}`}>
+            <div
+              key={i}
+              className={`animate-fade-in-up flex gap-3 px-4 py-3.5 rounded-xl border ${s.border} ${s.bg}`}
+              style={{ animationDelay: `${i * 75}ms` }}
+            >
               {s.icon}
               <div>
                 <p className={`text-sm font-semibold mb-0.5 ${s.title}`}>{p.title}</p>

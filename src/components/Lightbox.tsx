@@ -62,7 +62,7 @@ export default function Lightbox({ view, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/88 z-50 flex items-center justify-center p-8 select-none"
+      className="animate-fade-in fixed inset-0 bg-black/88 z-50 flex items-center justify-center p-8 select-none"
       onClick={onClose}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -97,7 +97,7 @@ export default function Lightbox({ view, onClose }: Props) {
       )}
 
       <div
-        className="flex flex-col items-center gap-5 max-w-[90vw] max-h-[90vh]"
+        className="animate-scale-in flex flex-col items-center gap-5 max-w-[90vw] max-h-[90vh]"
         onClick={e => e.stopPropagation()}
       >
         <div

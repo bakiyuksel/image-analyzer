@@ -32,13 +32,16 @@ export default function UrlModal({ onClose, onSubmit, error }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-surface border border-rim rounded-2xl w-full max-w-md mx-4 p-6 shadow-2xl shadow-black/60">
+      <div className="animate-scale-in bg-surface border border-rim rounded-2xl w-full max-w-md mx-4 p-6 shadow-2xl shadow-black/60">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-sm font-semibold text-fg uppercase tracking-widest">{T.title}</h2>
-          <button onClick={onClose} className="text-muted hover:text-fg transition-colors p-1 rounded-lg hover:bg-surface-hover">
+          <button
+            onClick={onClose}
+            className="text-muted hover:text-fg transition-colors p-1.5 rounded-lg hover:bg-surface-hover active:scale-90"
+          >
             <X size={16} />
           </button>
         </div>
@@ -50,11 +53,11 @@ export default function UrlModal({ onClose, onSubmit, error }: Props) {
           value={url}
           onChange={e => setUrl(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSubmit() }}
-          className="w-full bg-bg border border-rim rounded-xl px-4 py-2.5 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-accent transition-colors mb-4"
+          className="w-full bg-bg border border-rim rounded-xl px-4 py-2.5 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(124,109,250,0.15)] transition-all mb-4"
         />
 
         {error && (
-          <div className="bg-red-950/30 border border-red-500/25 rounded-xl px-4 py-3 mb-4">
+          <div className="animate-fade-in-up bg-red-950/30 border border-red-500/25 rounded-xl px-4 py-3 mb-4">
             <p className="text-sm text-red-300 leading-relaxed">{error}</p>
           </div>
         )}
@@ -62,14 +65,14 @@ export default function UrlModal({ onClose, onSubmit, error }: Props) {
         <div className="flex gap-2 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg border border-rim text-muted hover:text-fg hover:border-accent/50 transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-rim text-muted hover:text-fg hover:border-accent/50 transition-all active:scale-95"
           >
             {T.cancel}
           </button>
           <button
             onClick={handleSubmit}
             disabled={!url.trim()}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-accent hover:bg-accent-dim text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-shimmer px-4 py-2 text-sm font-medium rounded-lg bg-accent hover:bg-accent-dim text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
           >
             {T.load}
           </button>
