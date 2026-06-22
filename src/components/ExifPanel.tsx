@@ -187,6 +187,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
       {loading ? (
         <p className="text-sm text-muted">{TE.loading}</p>
       ) : (
+        <>
         <div className="flex gap-8 items-start">
           <div className="flex flex-col gap-2 flex-1">
             {flags.map((f, i) => (
@@ -241,6 +242,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
             <GpsMap lat={gpsLat} lng={gpsLng} />
           </div>
         )}
+        </>
       )}
     </div>
   )
