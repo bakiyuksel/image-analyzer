@@ -18,7 +18,7 @@ export default function GpsMap({ lat, lng }: Props) {
       style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center: [lng, lat],
       zoom: 13,
-      attributionControl: true,
+      attributionControl: { compact: true },
       interactive: true,
     })
 
