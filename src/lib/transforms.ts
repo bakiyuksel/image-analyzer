@@ -560,9 +560,23 @@ async function applyView(img: HTMLImageElement, def: ViewDefinition): Promise<{ 
   return { dataUrl: canvas.toDataURL('image/jpeg', 0.92) }
 }
 
+const MAX_DIMENSION = 3000
+
+function downscaleIfNeeded(img: HTMLImageElement): Promise<HTMLImageElement> {
+  const { naturalWidth: W, naturalHeight: H } = img
+  if (W <= MAX_DIMENSION && H <= MAX_DIMENSION) return Promise.resolve(img)
+  const scale = MAX_DIMENSION / Math.max(W, H)
+  const sw = Math.round(W * scale), sh = Math.round(H * scale)
+  const canvas = document.createElement('canvas')
+  canvas.width = sw; canvas.height = sh
+  canvas.getContext('2d')!.drawImage(img, 0, 0, sw, sh)
+  return loadImage(canvas.toDataURL('image/jpeg', 0.95))
+}
+
 export async function processImage(img: HTMLImageElement): Promise<ProcessedView[]> {
+  const src = await downscaleIfNeeded(img)
   return Promise.all(VIEW_DEFINITIONS.map(async def => {
-    const { dataUrl, score } = await applyView(img, def)
+    const { dataUrl, score } = await applyView(src, def)
     return { definition: def, dataUrl, score }
   }))
 }
