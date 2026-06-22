@@ -97,8 +97,8 @@ export const translations = {
       score: (n: string) => `Manipulatiescore: ${n}%`,
       subtext: {
         ok: 'Geen significante manipulatie-indicatoren gevonden.',
-        warn: 'Enkele lichte indicatoren aanwezig — bekijk de views voor details.',
-        alert: 'Meerdere sterke indicatoren wijzen op bewerking — controleer ELA en Noise Map.',
+        warn: 'Enkele lichte indicatoren aanwezig — bekijk de views voor details. Let op: moderne smartphones (iPhone, Pixel, Samsung) scoren van nature hoger door multi-frame verwerking en computationele fotografie.',
+        alert: 'Meerdere sterke indicatoren wijzen op bewerking — controleer ELA en Noise Map. Let op: computationele fotografie kan ELA-scores verhogen op authentieke smartphonefoto\'s.',
       },
     },
   },
@@ -199,8 +199,8 @@ export const translations = {
       score: (n: string) => `Manipulation score: ${n}%`,
       subtext: {
         ok: 'No significant manipulation indicators found.',
-        warn: 'Some minor indicators present — review the views for details.',
-        alert: 'Multiple strong indicators point to editing — check ELA and Noise Map.',
+        warn: 'Some minor indicators present — review the views for details. Note: modern smartphones (iPhone, Pixel, Samsung) naturally score higher due to multi-frame processing and computational photography.',
+        alert: 'Multiple strong indicators point to editing — check ELA and Noise Map. Note: computational photography can elevate ELA scores on authentic smartphone photos.',
       },
     },
   },

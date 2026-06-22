@@ -3,6 +3,7 @@ import type { ProcessedView, Prediction } from '../types/image'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
 import type { Lang } from '../lib/i18n'
+import { THRESHOLDS } from '../lib/thresholds'
 
 function buildPredictions(views: ProcessedView[], lang: Lang): Prediction[] {
   const T = translations[lang].prediction
@@ -13,23 +14,23 @@ function buildPredictions(views: ProcessedView[], lang: Lang): Prediction[] {
     const score = (view.score * 100).toFixed(1)
 
     if (view.definition.id === 'ela') {
-      if (view.score > 0.16) {
+      if (view.score > THRESHOLDS.ela.alert) {
         predictions.push({ level: 'alert', title: T.elaHighTitle, detail: T.elaHighDetail(score) })
-      } else if (view.score > 0.08) {
+      } else if (view.score > THRESHOLDS.ela.warn) {
         predictions.push({ level: 'warn', title: T.elaWarnTitle, detail: T.elaWarnDetail(score) })
       }
     }
 
     if (view.definition.id === 'noise-map') {
-      if (view.score > 0.55) {
+      if (view.score > THRESHOLDS.noise.alert) {
         predictions.push({ level: 'alert', title: T.noiseHighTitle, detail: T.noiseHighDetail(score) })
-      } else if (view.score > 0.35) {
+      } else if (view.score > THRESHOLDS.noise.warn) {
         predictions.push({ level: 'warn', title: T.noiseWarnTitle, detail: T.noiseWarnDetail(score) })
       }
     }
 
     if (view.definition.id === 'sobel') {
-      if (view.score > 0.25) {
+      if (view.score > THRESHOLDS.sobel.warn) {
         predictions.push({ level: 'warn', title: T.sobelWarnTitle, detail: T.sobelWarnDetail(score) })
       }
     }

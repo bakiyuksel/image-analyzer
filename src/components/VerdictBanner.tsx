@@ -2,6 +2,7 @@ import { ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
+import { THRESHOLDS } from '../lib/thresholds'
 
 interface Props {
   views: ProcessedView[]
@@ -13,14 +14,15 @@ function computeVerdict(views: ProcessedView[]) {
   const sobel = views.find(v => v.definition.id === 'sobel')?.score ?? 0
 
   let alerts = 0, warns = 0
-  if (ela > 0.16) alerts++; else if (ela > 0.08) warns++
-  if (noise > 0.55) alerts++; else if (noise > 0.35) warns++
-  if (sobel > 0.25) warns++
+  if (ela > THRESHOLDS.ela.alert) alerts++; else if (ela > THRESHOLDS.ela.warn) warns++
+  if (noise > THRESHOLDS.noise.alert) alerts++; else if (noise > THRESHOLDS.noise.warn) warns++
+  if (sobel > THRESHOLDS.sobel.warn) warns++
 
-  // normalize each metric against its alert threshold, weighted
-  const score = Math.min(100, Math.round(
-    (ela / 0.16) * 50 + (noise / 0.55) * 30 + (sobel / 0.25) * 20
-  ))
+  const score = Math.round(
+    Math.min(1, ela / THRESHOLDS.ela.alert) * 50 +
+    Math.min(1, noise / THRESHOLDS.noise.alert) * 30 +
+    Math.min(1, sobel / THRESHOLDS.sobel.warn) * 20
+  )
 
   if (alerts > 0 || warns >= 3) return { level: 'alert' as const, score }
   if (warns > 0)                 return { level: 'warn'  as const, score }
