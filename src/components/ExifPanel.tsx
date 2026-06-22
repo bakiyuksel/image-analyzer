@@ -123,7 +123,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
         if (cancelled) return
         setExif(data ?? null)
         if (thumb) {
-          const blob = new Blob([thumb], { type: 'image/jpeg' })
+          const blob = new Blob([thumb.slice()], { type: 'image/jpeg' })
           setThumbUrl(URL.createObjectURL(blob))
         }
       } finally {
