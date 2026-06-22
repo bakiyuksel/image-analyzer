@@ -21,6 +21,11 @@ export default function Lightbox({ view, onClose }: Props) {
   const dragging = useRef(false)
   const dragStart = useRef({ mx: 0, my: 0, ox: 0, oy: 0 })
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
   // Reset zoom/pan when view changes
   useEffect(() => { setZoom(1); setOffset({ x: 0, y: 0 }) }, [view.definition.id])
 
@@ -123,9 +128,9 @@ export default function Lightbox({ view, onClose }: Props) {
           />
         </div>
 
-        <div className="text-center border-t border-rim pt-4 w-full">
+        <div className="text-center border-t border-rim/50 pt-4 w-full">
           <p className="text-accent font-semibold text-base mb-1">{view.definition.name}</p>
-          <p className="text-muted text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="text-fg/70 text-sm max-w-lg mx-auto leading-relaxed">
             {description}
           </p>
         </div>
