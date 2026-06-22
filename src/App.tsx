@@ -13,6 +13,7 @@ import HistogramPanel from './components/HistogramPanel'
 import ExportPanel from './components/ExportPanel'
 import ConsentBanner from './components/ConsentBanner'
 import NotFound from './components/NotFound'
+import { Analytics } from '@vercel/analytics/react'
 
 export default function App() {
   if (window.location.pathname !== '/') return <NotFound />
@@ -106,6 +107,7 @@ export default function App() {
       )}
 
       <ConsentBanner />
+      <Analytics />
     </div>
   )
 }
