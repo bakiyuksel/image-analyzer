@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #09090f;
-  --color-surface: #0f0f1c;
-  --color-surface-hover: #141429;
-  --color-rim: #1e1e38;
-  --color-accent: #7c6dfa;
-  --color-accent-dim: #5f50d9;
-  --color-fg: #eaeaff;
-  --color-muted: #8585b0;
+  --color-bg: #222831;
+  --color-surface: #393E46;
+  --color-surface-hover: #42484f;
+  --color-rim: #2d3340;
+  --color-accent: #00ADB5;
+  --color-accent-dim: #008a91;
+  --color-fg: #EEEEEE;
+  --color-muted: #9097a3;
 
   --animate-float: float 3.5s ease-in-out infinite;
   --animate-fade-in-up: fade-in-up 0.45s ease-out both;
@@ -50,7 +50,7 @@
   position: absolute;
   inset: -6px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #7c6dfa, #c084fc, #7c6dfa);
+  background: linear-gradient(135deg, #00ADB5, #00d4de, #00ADB5);
   background-size: 200% 200%;
   filter: blur(18px);
   opacity: 0;
@@ -58,8 +58,8 @@
   z-index: -1;
   animation: gradient-shift 3s ease infinite;
 }
-.dropzone-glow:hover::after { opacity: 0.35; }
-.dropzone-glow.is-dragging::after { opacity: 0.6; }
+.dropzone-glow:hover::after { opacity: 0.3; }
+.dropzone-glow.is-dragging::after { opacity: 0.55; }
 
 /* Shimmer sweep on primary buttons */
 .btn-shimmer {
@@ -95,12 +95,12 @@ body,
 }
 
 body {
-  background-color: #09090f;
-  color: #eaeaff;
-  background-image: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(124, 109, 250, 0.07), transparent);
+  background-color: #222831;
+  color: #EEEEEE;
+  background-image: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(0, 173, 181, 0.06), transparent);
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e1e38; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #2a2a52; }
+::-webkit-scrollbar-thumb { background: #2d3340; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #393E46; }
