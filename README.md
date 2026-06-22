@@ -14,7 +14,7 @@
 
 **Test it out → [img.bakiyuksel.nl](https://img.bakiyuksel.nl)**
 
-**Image Analyzer** is a local web app for detecting photo manipulation and Photoshop edits. Upload any image to instantly generate 15 detection-focused processing views, an automatic analysis report, RGB histogram, and EXIF metadata breakdown — all 100% client-side with no server or data upload.
+**Image Analyzer** is a web app for detecting photo manipulation and Photoshop edits. Upload any image to instantly generate 15 detection-focused processing views, an automatic analysis report, RGB histogram, and EXIF metadata breakdown — all 100% client-side with no server or data upload.
 
 ### Detection Views
 
@@ -37,8 +37,15 @@
 
 - **Auto-analysis** — scored predictions for ELA, Noise Map, and Edge Detection with threshold-based alerts
 - **RGB Histogram** — gap detection for levels/curves adjustments (≥5 consecutive empty buckets)
-- **EXIF Metadata** — software flags, capture vs file date timeline check, GPS vs EXIF date, embedded thumbnail comparison
+- **EXIF Metadata** — software flags, capture vs file date timeline check, GPS vs EXIF date, embedded thumbnail comparison, GPS location map
 - **Export** — download the full analysis as a JSON report (scores, file info, timestamps)
+
+### Features
+
+- **NL / EN** — full interface translation, switchable in the top bar
+- **GPS map** — renders the photo's GPS coordinates on an interactive dark map (maplibre-gl + CARTO)
+- **Privacy-first** — Sentry error monitoring only activates after explicit user consent (cookie banner)
+- **404 page** — custom styled page; automatically reports the broken URL to Sentry
 
 ### Stack
 
@@ -46,6 +53,9 @@
 - Tailwind CSS v4 (CSS-first config, Gruvbox dark theme)
 - Canvas API — 100% client-side image processing, no data leaves the browser
 - `exifr` — client-side EXIF parsing
+- `maplibre-gl` — GPS location map (CARTO dark-matter tiles)
+- `@sentry/react` — error monitoring, session replay, profiling, logging (consent-gated)
+- `@vercel/analytics` — page view analytics
 
 ### Run locally
 
@@ -58,13 +68,15 @@ npm run dev
 
 Requires Node.js ≥ 20.19.
 
+Copy `.env.example` to `.env` and fill in your Sentry DSN if you want error monitoring locally.
+
 ---
 
 <h2 id="nederlands">🇳🇱 Nederlands</h2>
 
 **Probeer het → [img.bakiyuksel.nl](https://img.bakiyuksel.nl)**
 
-**Image Analyzer** is een lokale webapplicatie voor het detecteren van fotomanipulatie en Photoshop-bewerkingen. Upload een afbeelding en genereer direct 15 detectie-views, een automatisch analyserapport, RGB-histogram en EXIF-metadata — volledig client-side, geen server, geen data-upload.
+**Image Analyzer** is een webapplicatie voor het detecteren van fotomanipulatie en Photoshop-bewerkingen. Upload een afbeelding en genereer direct 15 detectie-views, een automatisch analyserapport, RGB-histogram en EXIF-metadata — volledig client-side, geen server, geen data-upload.
 
 ### Detectie-views
 
@@ -87,8 +99,15 @@ Requires Node.js ≥ 20.19.
 
 - **Automatische analyse** — scorede voorspellingen voor ELA, Noise Map en Edge Detection met drempelwaarden
 - **RGB Histogram** — gap-detectie voor levels/curves-aanpassingen (≥5 opeenvolgende lege buckets)
-- **EXIF Metadata** — softwareflags, tijdlijn-check (opnamedatum vs bestandsdatum), GPS vs EXIF-datum, thumbnail-vergelijking
+- **EXIF Metadata** — softwareflags, tijdlijn-check (opnamedatum vs bestandsdatum), GPS vs EXIF-datum, thumbnail-vergelijking, GPS-locatiekaart
 - **Export** — download de volledige analyse als JSON-rapport (scores, bestandsinfo, tijdstempels)
+
+### Features
+
+- **NL / EN** — volledige interfacevertaling, schakelbaar in de topbalk
+- **GPS-kaart** — toont de GPS-coördinaten van de foto op een interactieve donkere kaart (maplibre-gl + CARTO)
+- **Privacy-first** — Sentry-foutmonitoring activeert alleen na expliciete toestemming (consent banner)
+- **404-pagina** — eigen gestijlde pagina; rapporteert de gebroken URL automatisch aan Sentry
 
 ### Stack
 
@@ -96,6 +115,9 @@ Requires Node.js ≥ 20.19.
 - Tailwind CSS v4 (CSS-first config, Gruvbox dark theme)
 - Canvas API — 100% client-side beeldverwerking, geen data verlaat de browser
 - `exifr` — client-side EXIF-parsing
+- `maplibre-gl` — GPS-locatiekaart (CARTO dark-matter tiles)
+- `@sentry/react` — foutmonitoring, sessie-replay, profiling, logging (consent-vereist)
+- `@vercel/analytics` — paginaweergave-analytics
 
 ### Lokaal draaien
 
@@ -107,3 +129,5 @@ npm run dev
 ```
 
 Node.js ≥ 20.19 vereist.
+
+Kopieer `.env.example` naar `.env` en vul je Sentry DSN in als je foutmonitoring lokaal wil.
