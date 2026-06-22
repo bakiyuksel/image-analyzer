@@ -10,6 +10,12 @@ export const translations = {
     dropzone: {
       headline: 'Sleep een afbeelding hierheen',
       hint: 'of klik om te bladeren · of plak (Ctrl+V) — JPG, PNG, WebP, AVIF',
+      urlPlaceholder: 'Of plak een afbeelding-URL…',
+      urlLoad: 'Laden',
+      urlError: {
+        cors: 'Deze site staat ophalen van afbeeldingen niet toe (CORS). Sla de afbeelding op en sleep hem hierheen.',
+        failed: 'Kon de afbeelding niet ophalen. Controleer de URL en probeer opnieuw.',
+      },
     },
     lightbox: {
       close: 'Sluiten (Escape)',
@@ -112,6 +118,12 @@ export const translations = {
     dropzone: {
       headline: 'Drop an image here',
       hint: 'or click to browse · or paste (Ctrl+V) — JPG, PNG, WebP, AVIF',
+      urlPlaceholder: 'Or paste an image URL…',
+      urlLoad: 'Load',
+      urlError: {
+        cors: "This site doesn't allow fetching images (CORS). Save the image and drop it here.",
+        failed: "Couldn't fetch the image. Check the URL and try again.",
+      },
     },
     lightbox: {
       close: 'Close (Escape)',

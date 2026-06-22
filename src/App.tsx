@@ -26,6 +26,7 @@ export default function App() {
   const [file, setFile] = useState<File | null>(null)
   const [lightboxId, setLightboxId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [urlError, setUrlError] = useState<string | null>(null)
 
   const handleFile = useCallback((f: File) => {
     setFile(f)
@@ -50,21 +51,52 @@ export default function App() {
     img.src = objectUrl
   }, [])
 
+  const handleUrl = useCallback(async (url: string) => {
+    setUrlError(null)
+    setLoading(true)
+    try {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error('http')
+      const contentType = res.headers.get('content-type') ?? ''
+      if (!contentType.startsWith('image/')) throw new Error('not-image')
+      const blob = await res.blob()
+      const name = url.split('/').pop()?.split('?')[0] ?? 'image'
+      handleFile(new File([blob], name, { type: blob.type || contentType }))
+    } catch (err) {
+      setLoading(false)
+      const isCors = err instanceof TypeError
+      setUrlError(isCors ? T.dropzone.urlError.cors : T.dropzone.urlError.failed)
+    }
+  }, [handleFile, T.dropzone.urlError])
+
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       if (views.length > 0 || loading) return
+      if ((e.target as HTMLElement).tagName === 'INPUT') return
       const items = e.clipboardData?.items
       if (!items) return
-      for (const item of Array.from(items)) {
+      const arr = Array.from(items)
+      for (const item of arr) {
         if (item.type.startsWith('image/')) {
           const f = item.getAsFile()
-          if (f) { handleFile(f); break }
+          if (f) { handleFile(f); return }
+        }
+      }
+      for (const item of arr) {
+        if (item.type === 'text/plain') {
+          item.getAsString((text) => {
+            const trimmed = text.trim()
+            if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+              void handleUrl(trimmed)
+            }
+          })
+          return
         }
       }
     }
     window.addEventListener('paste', onPaste)
     return () => window.removeEventListener('paste', onPaste)
-  }, [handleFile, views.length, loading])
+  }, [handleFile, handleUrl, views.length, loading])
 
   const lightboxView = lightboxId != null
     ? (views.find(v => v.definition.id === lightboxId) ?? null)
@@ -95,7 +127,7 @@ export default function App() {
           </div>
           {views.length > 0 && (
             <button
-              onClick={() => { setViews([]); setFile(null); setLightboxId(null) }}
+              onClick={() => { setViews([]); setFile(null); setLightboxId(null); setUrlError(null) }}
               className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-sm border border-rim hover:border-accent"
             >
               <RefreshCw size={13} />
@@ -112,7 +144,7 @@ export default function App() {
             <p className="text-sm">{T.app.loading}</p>
           </div>
         ) : views.length === 0 ? (
-          <DropZone onFile={handleFile} />
+          <DropZone onFile={handleFile} onUrl={handleUrl} urlError={urlError} />
         ) : (
           <>
             <VerdictBanner views={views} />
