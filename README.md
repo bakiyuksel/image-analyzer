@@ -12,6 +12,8 @@
 
 <h2 id="english">🇬🇧 English</h2>
 
+**Test it out → [img.bakiyuksel.nl](https://img.bakiyuksel.nl)**
+
 **Image Analyzer** is a local web app for detecting photo manipulation and Photoshop edits. Upload any image to instantly generate 15 detection-focused processing views, an automatic analysis report, RGB histogram, and EXIF metadata breakdown — all 100% client-side with no server or data upload.
 
 ### Detection Views
@@ -59,6 +61,8 @@ Requires Node.js ≥ 20.19.
 ---
 
 <h2 id="nederlands">🇳🇱 Nederlands</h2>
+
+**Probeer het → [img.bakiyuksel.nl](https://img.bakiyuksel.nl)**
 
 **Image Analyzer** is een lokale webapplicatie voor het detecteren van fotomanipulatie en Photoshop-bewerkingen. Upload een afbeelding en genereer direct 15 detectie-views, een automatisch analyserapport, RGB-histogram en EXIF-metadata — volledig client-side, geen server, geen data-upload.
 
