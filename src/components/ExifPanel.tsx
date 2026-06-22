@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import exifr from 'exifr'
 import { AlertTriangle, CheckCircle, ImageOff } from 'lucide-react'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
 import type { Lang } from '../lib/i18n'
-import GpsMap from './GpsMap'
+
+const GpsMap = lazy(() => import('./GpsMap'))
 
 interface ExifData {
   Make?: string
@@ -239,7 +240,9 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
         {gpsLat != null && gpsLng != null && (
           <div className="mt-6 max-w-2xl">
             <p className="text-xs text-muted uppercase tracking-wide mb-2">GPS</p>
-            <GpsMap lat={gpsLat} lng={gpsLng} />
+            <Suspense fallback={<div className="w-full rounded-sm border border-rim bg-bg" style={{ height: '180px' }} />}>
+              <GpsMap lat={gpsLat} lng={gpsLng} />
+            </Suspense>
           </div>
         )}
         </>
