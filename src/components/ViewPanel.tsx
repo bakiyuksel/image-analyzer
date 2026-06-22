@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Info } from 'lucide-react'
+import { Info, Download } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
 
 interface Props {
@@ -35,16 +35,27 @@ export default function ViewPanel({ view, onClick }: Props) {
           draggable={false}
         />
 
-        <button
-          className="absolute top-2 right-2 p-1.5 rounded-sm bg-bg/75 text-muted hover:text-accent opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
-          onClick={e => {
-            e.stopPropagation()
-            setTooltipOpen(v => !v)
-          }}
-          title="Uitleg"
-        >
-          <Info size={15} />
-        </button>
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <a
+            href={view.dataUrl}
+            download={`${view.definition.id}.jpg`}
+            className="p-1.5 rounded-sm bg-bg/75 text-muted hover:text-accent backdrop-blur-sm"
+            onClick={e => e.stopPropagation()}
+            title="Download"
+          >
+            <Download size={15} />
+          </a>
+          <button
+            className="p-1.5 rounded-sm bg-bg/75 text-muted hover:text-accent backdrop-blur-sm"
+            onClick={e => {
+              e.stopPropagation()
+              setTooltipOpen(v => !v)
+            }}
+            title="Uitleg"
+          >
+            <Info size={15} />
+          </button>
+        </div>
 
         {tooltipOpen && (
           <div

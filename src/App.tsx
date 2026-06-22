@@ -6,14 +6,18 @@ import DropZone from './components/DropZone'
 import ViewGrid from './components/ViewGrid'
 import Lightbox from './components/Lightbox'
 import PredictionPanel from './components/PredictionPanel'
+import ExifPanel from './components/ExifPanel'
+import HistogramPanel from './components/HistogramPanel'
 
 export default function App() {
   const [views, setViews] = useState<ProcessedView[]>([])
+  const [file, setFile] = useState<File | null>(null)
   const [lightboxId, setLightboxId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleFile = useCallback((file: File) => {
-    const objectUrl = URL.createObjectURL(file)
+  const handleFile = useCallback((f: File) => {
+    setFile(f)
+    const objectUrl = URL.createObjectURL(f)
     const img = new Image()
     img.onload = async () => {
       setLoading(true)
@@ -38,7 +42,7 @@ export default function App() {
         </div>
         {views.length > 0 && (
           <button
-            onClick={() => { setViews([]); setLightboxId(null) }}
+            onClick={() => { setViews([]); setFile(null); setLightboxId(null) }}
             className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-sm border border-rim hover:border-accent"
           >
             <RefreshCw size={13} />
@@ -58,7 +62,14 @@ export default function App() {
         ) : (
           <>
             <ViewGrid views={views} onPanelClick={setLightboxId} />
+            <HistogramPanel dataUrl={views.find(v => v.definition.id === 'original')?.dataUrl ?? ''} />
             <PredictionPanel views={views} />
+            {file && (
+              <ExifPanel
+                file={file}
+                originalDataUrl={views.find(v => v.definition.id === 'original')?.dataUrl ?? ''}
+              />
+            )}
           </>
         )}
       </main>

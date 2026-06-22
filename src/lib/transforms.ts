@@ -125,6 +125,83 @@ function noiseMap(data: ImageData): ImageData {
   return new ImageData(result, W, H)
 }
 
+// ─── clone detection (copy-move heuristic, async) ────────────────────────────
+
+async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+  const MAX = 512
+  const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight))
+  const SW = Math.round(img.naturalWidth * scale), SH = Math.round(img.naturalHeight * scale)
+
+  const small = document.createElement('canvas')
+  small.width = SW; small.height = SH
+  const sCtx = small.getContext('2d')!
+  sCtx.drawImage(img, 0, 0, SW, SH)
+  const pixels = sCtx.getImageData(0, 0, SW, SH).data
+
+  const BLOCK = 16, STRIDE = 8
+  const blocks: { x: number; y: number; sig: string }[] = []
+
+  for (let y = 0; y <= SH - BLOCK; y += STRIDE) {
+    for (let x = 0; x <= SW - BLOCK; x += STRIDE) {
+      // Quadrant means (2×2 grid of sub-blocks) for a more discriminating signature
+      const qr = [0, 0, 0, 0], qg = [0, 0, 0, 0], qb = [0, 0, 0, 0], qc = [0, 0, 0, 0]
+      for (let dy = 0; dy < BLOCK; dy++) {
+        for (let dx = 0; dx < BLOCK; dx++) {
+          const qi = (dy < BLOCK / 2 ? 0 : 2) + (dx < BLOCK / 2 ? 0 : 1)
+          const idx = ((y + dy) * SW + (x + dx)) * 4
+          qr[qi] += pixels[idx]; qg[qi] += pixels[idx + 1]; qb[qi] += pixels[idx + 2]; qc[qi]++
+        }
+      }
+      // Quantize to 5-bit per channel per quadrant → reduce false positives
+      const sig = qr.map((_, i) =>
+        `${Math.round(qr[i] / qc[i] / 8)},${Math.round(qg[i] / qc[i] / 8)},${Math.round(qb[i] / qc[i] / 8)}`
+      ).join('|')
+      blocks.push({ x, y, sig })
+    }
+  }
+
+  // Group blocks by signature
+  const groups = new Map<string, { x: number; y: number }[]>()
+  for (const b of blocks) {
+    if (!groups.has(b.sig)) groups.set(b.sig, [])
+    groups.get(b.sig)!.push({ x: b.x, y: b.y })
+  }
+
+  // Collect suspicious blocks: same sig, distance > 32px in scaled space
+  const MIN_DIST = 32
+  const suspicious = new Set<string>()
+  for (const positions of groups.values()) {
+    if (positions.length < 2) continue
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        const dx = positions[i].x - positions[j].x, dy = positions[i].y - positions[j].y
+        if (Math.sqrt(dx * dx + dy * dy) >= MIN_DIST) {
+          suspicious.add(`${positions[i].x},${positions[i].y}`)
+          suspicious.add(`${positions[j].x},${positions[j].y}`)
+        }
+      }
+    }
+  }
+
+  // Draw on full-resolution canvas
+  const out = document.createElement('canvas')
+  out.width = img.naturalWidth; out.height = img.naturalHeight
+  const oCtx = out.getContext('2d')!
+  oCtx.drawImage(img, 0, 0)
+
+  if (suspicious.size > 0) {
+    oCtx.fillStyle = 'rgba(255, 60, 60, 0.45)'
+    for (const key of suspicious) {
+      const [sx, sy] = key.split(',').map(Number)
+      const fx = Math.round(sx / scale), fy = Math.round(sy / scale)
+      const fw = Math.round(BLOCK / scale), fh = Math.round(BLOCK / scale)
+      oCtx.fillRect(fx, fy, fw, fh)
+    }
+  }
+
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+}
+
 // ─── scoring helpers ──────────────────────────────────────────────────────────
 
 function scoreMeanBrightness(data: ImageData): number {
@@ -240,6 +317,12 @@ export const VIEW_DEFINITIONS: ViewDefinition[] = [
     name: 'Saturation Channel',
     description: 'Verzadiging (S uit HSV) als grijswaarden. Lokaal opgedraaide of verlaagde verzadiging en selective color zijn hier direct zichtbaar.',
     canvasTransform: saturationChannel,
+  },
+  {
+    id: 'clone-detect',
+    name: 'Clone Detect',
+    description: 'Heuristiek voor copy-move detectie — vergelijkt overlappende 16×16 blokken op gelijkenis en markeert verdachte kopieën in rood. Uniforme gebieden (hemel, muur) kunnen false positives geven. Combineer altijd met ELA voor bevestiging.',
+    asyncTransform: cloneDetect,
   },
   {
     id: 'red-channel',
