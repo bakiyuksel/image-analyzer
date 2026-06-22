@@ -69,62 +69,6 @@ function saturationChannel(data: ImageData): ImageData {
   return new ImageData(result, data.width, data.height)
 }
 
-function sobelEdges(data: ImageData): ImageData {
-  const W = data.width, H = data.height, d = data.data
-  const gray = new Float32Array(W * H)
-  for (let i = 0; i < W * H; i++)
-    gray[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]
-  const result = new Uint8ClampedArray(d.length)
-  for (let y = 1; y < H - 1; y++) {
-    for (let x = 1; x < W - 1; x++) {
-      const tl = gray[(y-1)*W+x-1], tc = gray[(y-1)*W+x], tr = gray[(y-1)*W+x+1]
-      const ml = gray[y*W+x-1],                             mr = gray[y*W+x+1]
-      const bl = gray[(y+1)*W+x-1], bc = gray[(y+1)*W+x], br = gray[(y+1)*W+x+1]
-      const Gx = -tl - 2*ml - bl + tr + 2*mr + br
-      const Gy =  tl + 2*tc + tr - bl - 2*bc - br
-      const mag = Math.min(255, Math.sqrt(Gx*Gx + Gy*Gy))
-      const idx = (y*W+x)*4
-      result[idx] = result[idx+1] = result[idx+2] = mag; result[idx+3] = 255
-    }
-  }
-  return new ImageData(result, W, H)
-}
-
-function noiseMap(data: ImageData): ImageData {
-  const W = data.width, H = data.height, d = data.data
-  let src = new Float32Array(W * H * 3)
-  for (let i = 0; i < W * H; i++) {
-    src[i*3] = d[i*4]; src[i*3+1] = d[i*4+1]; src[i*3+2] = d[i*4+2]
-  }
-  for (let pass = 0; pass < 3; pass++) {
-    const blurred = new Float32Array(W * H * 3)
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        let r = 0, g = 0, b = 0, count = 0
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const ny = Math.max(0, Math.min(H-1, y+dy)), nx = Math.max(0, Math.min(W-1, x+dx))
-            const idx = (ny*W+nx)*3
-            r += src[idx]; g += src[idx+1]; b += src[idx+2]; count++
-          }
-        }
-        const idx = (y*W+x)*3
-        blurred[idx] = r/count; blurred[idx+1] = g/count; blurred[idx+2] = b/count
-      }
-    }
-    src = blurred
-  }
-  const result = new Uint8ClampedArray(d.length)
-  const SCALE = 8, OFFSET = 128
-  for (let i = 0; i < W*H; i++) {
-    result[i*4]   = Math.max(0, Math.min(255, (d[i*4]   - src[i*3])   * SCALE + OFFSET))
-    result[i*4+1] = Math.max(0, Math.min(255, (d[i*4+1] - src[i*3+1]) * SCALE + OFFSET))
-    result[i*4+2] = Math.max(0, Math.min(255, (d[i*4+2] - src[i*3+2]) * SCALE + OFFSET))
-    result[i*4+3] = 255
-  }
-  return new ImageData(result, W, H)
-}
-
 // ─── clone detection (copy-move heuristic, async) ────────────────────────────
 
 async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string }> {
@@ -200,6 +144,63 @@ async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string }> 
   }
 
   return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+}
+
+// ─── web worker (noiseMap + sobel run off the main thread) ───────────────────
+
+let _worker: Worker | null = null
+let _msgId = 0
+
+function getWorker(): Worker {
+  if (!_worker) {
+    _worker = new Worker(new URL('./analysis-worker.ts', import.meta.url), { type: 'module' })
+  }
+  return _worker
+}
+
+function runInWorker(type: 'noise-map' | 'sobel', imageData: ImageData): Promise<ImageData> {
+  return new Promise(resolve => {
+    const id = _msgId++
+    const w = getWorker()
+    const pixels = new Uint8ClampedArray(imageData.data)
+    const { width, height } = imageData
+    const handler = (e: MessageEvent) => {
+      if (e.data.id === id) {
+        w.removeEventListener('message', handler)
+        resolve(new ImageData(e.data.result as unknown as Uint8ClampedArray<ArrayBuffer>, width, height))
+      }
+    }
+    w.addEventListener('message', handler)
+    w.postMessage({ id, type, pixels, width, height }, [pixels.buffer])
+  })
+}
+
+async function noiseMapAsync(img: HTMLImageElement): Promise<{ dataUrl: string; score: number }> {
+  const W = img.naturalWidth, H = img.naturalHeight
+  const canvas = document.createElement('canvas')
+  canvas.width = W; canvas.height = H
+  canvas.getContext('2d')!.drawImage(img, 0, 0)
+  const input = canvas.getContext('2d')!.getImageData(0, 0, W, H)
+  const output = await runInWorker('noise-map', input)
+  const score = scoreNoiseVariance(output)
+  const out = document.createElement('canvas')
+  out.width = W; out.height = H
+  out.getContext('2d')!.putImageData(output, 0, 0)
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
+}
+
+async function sobelAsync(img: HTMLImageElement): Promise<{ dataUrl: string; score: number }> {
+  const W = img.naturalWidth, H = img.naturalHeight
+  const canvas = document.createElement('canvas')
+  canvas.width = W; canvas.height = H
+  canvas.getContext('2d')!.drawImage(img, 0, 0)
+  const input = canvas.getContext('2d')!.getImageData(0, 0, W, H)
+  const output = await runInWorker('sobel', input)
+  const score = scoreMeanBrightness(output)
+  const out = document.createElement('canvas')
+  out.width = W; out.height = H
+  out.getContext('2d')!.putImageData(output, 0, 0)
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
 }
 
 // ─── scoring helpers ──────────────────────────────────────────────────────────
@@ -460,15 +461,13 @@ export const VIEW_DEFINITIONS: ViewDefinition[] = [
     id: 'noise-map',
     name: 'Noise Map',
     description: 'Isoleert de ruislaag via high-pass filtering. Kloonstempels, inpainting en AI-gebieden missen de organische ruis van de camera — die zones verschijnen hier als te glad of met een afwijkend patroon.',
-    canvasTransform: noiseMap,
-    scoreFromOutput: scoreNoiseVariance,
+    asyncTransform: noiseMapAsync,
   },
   {
     id: 'sobel',
     name: 'Edge Detection',
     description: 'Sobel-operator berekent de gradiëntsterkte per pixel. Onnatuurlijk scherpe randen op logisch zachte plekken, of halo\'s rond ingeplakte objecten, zijn directe tekenen van compositing.',
-    canvasTransform: sobelEdges,
-    scoreFromOutput: scoreMeanBrightness,
+    asyncTransform: sobelAsync,
   },
   {
     id: 'negative',
@@ -560,7 +559,7 @@ async function applyView(img: HTMLImageElement, def: ViewDefinition): Promise<{ 
   return { dataUrl: canvas.toDataURL('image/jpeg', 0.92) }
 }
 
-const MAX_DIMENSION = 3000
+const MAX_DIMENSION = 2000
 
 function downscaleIfNeeded(img: HTMLImageElement): Promise<HTMLImageElement> {
   const { naturalWidth: W, naturalHeight: H } = img

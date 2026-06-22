@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import * as Sentry from '@sentry/react'
 import { RefreshCw } from 'lucide-react'
 import type { ProcessedView } from './types/image'
@@ -14,6 +14,7 @@ import HistogramPanel from './components/HistogramPanel'
 import ExportPanel from './components/ExportPanel'
 import ConsentBanner from './components/ConsentBanner'
 import NotFound from './components/NotFound'
+import VerdictBanner from './components/VerdictBanner'
 import { Analytics } from '@vercel/analytics/react'
 
 export default function App() {
@@ -48,6 +49,22 @@ export default function App() {
     }
     img.src = objectUrl
   }, [])
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      if (views.length > 0 || loading) return
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          const f = item.getAsFile()
+          if (f) { handleFile(f); break }
+        }
+      }
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  }, [handleFile, views.length, loading])
 
   const lightboxView = lightboxId != null
     ? (views.find(v => v.definition.id === lightboxId) ?? null)
@@ -98,6 +115,7 @@ export default function App() {
           <DropZone onFile={handleFile} />
         ) : (
           <>
+            <VerdictBanner views={views} />
             <ViewGrid views={views} onPanelClick={setLightboxId} />
             <HistogramPanel dataUrl={views.find(v => v.definition.id === 'original')?.dataUrl ?? ''} />
             <PredictionPanel views={views} />

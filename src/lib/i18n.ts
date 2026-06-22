@@ -9,7 +9,7 @@ export const translations = {
     },
     dropzone: {
       headline: 'Sleep een afbeelding hierheen',
-      hint: 'of klik om te bladeren — JPG, PNG, WebP, AVIF',
+      hint: 'of klik om te bladeren · of plak (Ctrl+V) — JPG, PNG, WebP, AVIF',
     },
     lightbox: {
       close: 'Sluiten (Escape)',
@@ -89,6 +89,18 @@ export const translations = {
       title: 'Pagina niet gevonden',
       back: 'Terug naar home',
     },
+    verdict: {
+      heading: 'Verdict',
+      ok: 'Waarschijnlijk authentiek',
+      warn: 'Onbeslist',
+      alert: 'Waarschijnlijk gemanipuleerd',
+      score: (n: string) => `Manipulatiescore: ${n}%`,
+      subtext: {
+        ok: 'Geen significante manipulatie-indicatoren gevonden.',
+        warn: 'Enkele lichte indicatoren aanwezig — bekijk de views voor details.',
+        alert: 'Meerdere sterke indicatoren wijzen op bewerking — controleer ELA en Noise Map.',
+      },
+    },
   },
 
   en: {
@@ -99,7 +111,7 @@ export const translations = {
     },
     dropzone: {
       headline: 'Drop an image here',
-      hint: 'or click to browse — JPG, PNG, WebP, AVIF',
+      hint: 'or click to browse · or paste (Ctrl+V) — JPG, PNG, WebP, AVIF',
     },
     lightbox: {
       close: 'Close (Escape)',
@@ -178,6 +190,18 @@ export const translations = {
       code: '404',
       title: 'Page not found',
       back: 'Back to home',
+    },
+    verdict: {
+      heading: 'Verdict',
+      ok: 'Likely authentic',
+      warn: 'Inconclusive',
+      alert: 'Likely manipulated',
+      score: (n: string) => `Manipulation score: ${n}%`,
+      subtext: {
+        ok: 'No significant manipulation indicators found.',
+        warn: 'Some minor indicators present — review the views for details.',
+        alert: 'Multiple strong indicators point to editing — check ELA and Noise Map.',
+      },
     },
   },
 } as const
