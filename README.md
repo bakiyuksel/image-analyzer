@@ -1,73 +1,105 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Image Analyzer
 
-Currently, two official plugins are available:
+<a href="#english"><img src="https://img.shields.io/badge/lang-English-4a90d9?style=flat-square" /></a>
+&nbsp;
+<a href="#nederlands"><img src="https://img.shields.io/badge/lang-Nederlands-d79921?style=flat-square" /></a>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+</div>
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+<h2 id="english">🇬🇧 English</h2>
 
-## Expanding the ESLint configuration
+**Image Analyzer** is a local web app for detecting photo manipulation and Photoshop edits. Upload any image to instantly generate 15 detection-focused processing views, an automatic analysis report, RGB histogram, and EXIF metadata breakdown — all 100% client-side with no server or data upload.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Detection Views
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| View | Purpose |
+|---|---|
+| ELA | Error Level Analysis — reveals inconsistent JPEG compression zones from retouching or compositing |
+| JPEG Ghost | Multi-quality compression fingerprint — spliced regions from a different source light up in orange-red |
+| Noise Map | High-pass filter isolates sensor noise — inpainted or cloned areas appear unnaturally smooth |
+| Edge Detection | Sobel operator — exposes unnatural sharpness, halos, or hard cutouts from compositing |
+| Clone Detect | Copy-move heuristic — flags 16×16 pixel blocks duplicated from elsewhere in the image |
+| FFT Spectrum | 2D Fourier transform — reveals AI upscaling artifacts, tiling patterns, and periodic structures |
+| Hue Channel | HSV hue as grayscale — highlights selective color corrections and abrupt hue shifts |
+| Saturation Channel | HSV saturation as grayscale — exposes local saturation boosts and selective color edits |
+| High Contrast | Extreme contrast — makes lighting inconsistencies and soft blending visible |
+| Negative | Inverted tones — subtle retouching and blending seams can appear as tone differences |
+| Grayscale | Pure luminance — compositing mismatches without color distraction |
+| Red / Green / Blue Channel | Per-channel noise analysis — spliced elements from a different camera show a different noise profile |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Analysis Panels
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Auto-analysis** — scored predictions for ELA, Noise Map, and Edge Detection with threshold-based alerts
+- **RGB Histogram** — gap detection for levels/curves adjustments (≥5 consecutive empty buckets)
+- **EXIF Metadata** — software flags, capture vs file date timeline check, GPS vs EXIF date, embedded thumbnail comparison
+- **Export** — download the full analysis as a JSON report (scores, file info, timestamps)
+
+### Stack
+
+- Vite 8 + React 19 + TypeScript 6
+- Tailwind CSS v4 (CSS-first config, Gruvbox dark theme)
+- Canvas API — 100% client-side image processing, no data leaves the browser
+- `exifr` — client-side EXIF parsing
+
+### Run locally
+
+```sh
+git clone https://github.com/bakiyuksel/image-analyzer.git
+cd image-analyzer
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Requires Node.js ≥ 20.19.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+<h2 id="nederlands">🇳🇱 Nederlands</h2>
+
+**Image Analyzer** is een lokale webapplicatie voor het detecteren van fotomanipulatie en Photoshop-bewerkingen. Upload een afbeelding en genereer direct 15 detectie-views, een automatisch analyserapport, RGB-histogram en EXIF-metadata — volledig client-side, geen server, geen data-upload.
+
+### Detectie-views
+
+| View | Doel |
+|---|---|
+| ELA | Error Level Analysis — toont inconsistente JPEG-compressiezones door retouche of compositing |
+| JPEG Ghost | Multi-kwaliteit compressie-fingerprint — ingeplakte gebieden van een andere bron lichten op in oranje-rood |
+| Noise Map | High-pass filter isoleert sensorruis — ingeschilderde of geklonede gebieden zijn onnatuurlijk glad |
+| Edge Detection | Sobel-operator — onthult onnatuurlijke scherpte, halo's of harde uitsnijdingen bij compositing |
+| Clone Detect | Copy-move heuristiek — markeert 16×16 pixel blokken die elders in de afbeelding zijn gekopieerd |
+| FFT Spectrum | 2D Fourier-transformatie — onthult AI-upscaling-artefacten, tilingpatronen en periodieke structuren |
+| Hue Channel | HSV hue als grijswaarden — markeert selectieve kleurcorrecties en abrupte hue-verschuivingen |
+| Saturation Channel | HSV saturatie als grijswaarden — onthult lokale verzadigingsaanpassingen en selective color |
+| High Contrast | Extreem contrast — maakt belichtingsinconsistenties en zachte blending zichtbaar |
+| Negative | Omgekeerde tonen — subtiele retouches en blending-naden kunnen als toonverschillen oplichten |
+| Grayscale | Puur luminantie — compositingmismatch zonder kleurafleiding |
+| Rood / Groen / Blauw kanaal | Per-kanaal ruis-analyse — ingeplakte elementen van een andere camera tonen een afwijkend ruispatroon |
+
+### Analyse-panels
+
+- **Automatische analyse** — scorede voorspellingen voor ELA, Noise Map en Edge Detection met drempelwaarden
+- **RGB Histogram** — gap-detectie voor levels/curves-aanpassingen (≥5 opeenvolgende lege buckets)
+- **EXIF Metadata** — softwareflags, tijdlijn-check (opnamedatum vs bestandsdatum), GPS vs EXIF-datum, thumbnail-vergelijking
+- **Export** — download de volledige analyse als JSON-rapport (scores, bestandsinfo, tijdstempels)
+
+### Stack
+
+- Vite 8 + React 19 + TypeScript 6
+- Tailwind CSS v4 (CSS-first config, Gruvbox dark theme)
+- Canvas API — 100% client-side beeldverwerking, geen data verlaat de browser
+- `exifr` — client-side EXIF-parsing
+
+### Lokaal draaien
+
+```sh
+git clone https://github.com/bakiyuksel/image-analyzer.git
+cd image-analyzer
+npm install
+npm run dev
 ```
+
+Node.js ≥ 20.19 vereist.
