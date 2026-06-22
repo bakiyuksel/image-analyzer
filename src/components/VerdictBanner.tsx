@@ -31,25 +31,34 @@ function computeVerdict(views: ProcessedView[]) {
 
 const STYLES = {
   alert: {
-    border: 'border-red-800',
-    bg: 'bg-red-950/40',
-    icon: <ShieldAlert size={20} className="text-red-400 shrink-0" />,
+    border: 'border-red-500/30',
+    bg: 'bg-red-950/20',
+    glow: 'shadow-red-950/50',
+    bar: 'bg-gradient-to-r from-red-600 to-red-400',
+    icon: <ShieldAlert size={22} className="text-red-400" />,
+    iconBg: 'bg-red-950/60',
     title: 'text-red-300',
-    bar: 'bg-red-500',
+    score: 'text-red-300',
   },
   warn: {
-    border: 'border-yellow-800',
-    bg: 'bg-yellow-950/40',
-    icon: <ShieldQuestion size={20} className="text-yellow-400 shrink-0" />,
+    border: 'border-yellow-500/30',
+    bg: 'bg-yellow-950/20',
+    glow: 'shadow-yellow-950/50',
+    bar: 'bg-gradient-to-r from-yellow-600 to-yellow-400',
+    icon: <ShieldQuestion size={22} className="text-yellow-400" />,
+    iconBg: 'bg-yellow-950/60',
     title: 'text-yellow-300',
-    bar: 'bg-yellow-500',
+    score: 'text-yellow-300',
   },
   ok: {
-    border: 'border-green-900',
-    bg: 'bg-green-950/30',
-    icon: <ShieldCheck size={20} className="text-green-500 shrink-0" />,
-    title: 'text-green-400',
-    bar: 'bg-green-500',
+    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-950/20',
+    glow: 'shadow-emerald-950/50',
+    bar: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
+    icon: <ShieldCheck size={22} className="text-emerald-400" />,
+    iconBg: 'bg-emerald-950/60',
+    title: 'text-emerald-300',
+    score: 'text-emerald-300',
   },
 }
 
@@ -60,16 +69,28 @@ export default function VerdictBanner({ views }: Props) {
   const S = STYLES[level]
 
   return (
-    <div className={`rounded-sm border ${S.border} ${S.bg} px-5 py-4 mb-8`}>
-      <div className="flex items-center gap-3 mb-3">
-        {S.icon}
-        <span className={`text-base font-semibold ${S.title}`}>{T[level]}</span>
-        <span className="ml-auto text-xs text-muted">{T.score(String(score))}</span>
+    <div className={`rounded-2xl border ${S.border} ${S.bg} shadow-xl ${S.glow} overflow-hidden mb-8`}>
+      <div className="px-6 py-5">
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`p-2.5 rounded-xl ${S.iconBg} shrink-0`}>
+            {S.icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`text-base font-semibold ${S.title}`}>{T[level]}</p>
+            <p className="text-xs text-muted mt-0.5 leading-relaxed line-clamp-2">{T.subtext[level]}</p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className={`text-4xl font-bold tabular-nums ${S.score}`}>{score}</p>
+            <p className="text-xs text-muted">/ 100</p>
+          </div>
+        </div>
+        <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+          <div
+            className={`h-full ${S.bar} rounded-full transition-all duration-700`}
+            style={{ width: `${score}%` }}
+          />
+        </div>
       </div>
-      <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden mb-3">
-        <div className={`h-full ${S.bar} rounded-full transition-all`} style={{ width: `${score}%` }} />
-      </div>
-      <p className="text-sm text-muted leading-relaxed">{T.subtext[level]}</p>
     </div>
   )
 }

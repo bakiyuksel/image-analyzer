@@ -115,21 +115,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg text-fg">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-rim">
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-3.5 border-b border-rim bg-surface/80 backdrop-blur-md">
         <div>
-          <h1 className="text-base font-semibold text-fg tracking-wide">Image Analyzer</h1>
+          <h1 className="text-sm font-semibold text-fg tracking-wide">Image Analyzer</h1>
           <p className="text-xs text-muted mt-0.5">{T.app.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 bg-bg rounded-lg p-0.5 border border-rim">
             {(['nl', 'en'] as const).map(l => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`text-xs px-2 py-1 rounded-sm border transition-colors ${
+                className={`text-xs px-2.5 py-1 rounded-md transition-all ${
                   lang === l
-                    ? 'text-fg border-accent'
-                    : 'text-muted border-rim hover:border-accent/60 hover:text-fg'
+                    ? 'bg-accent text-white font-medium'
+                    : 'text-muted hover:text-fg'
                 }`}
               >
                 {l.toUpperCase()}
@@ -139,7 +139,7 @@ export default function App() {
           {views.length > 0 && (
             <button
               onClick={() => { setViews([]); setFile(null); setLightboxId(null); setUrlError(null) }}
-              className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-sm border border-rim hover:border-accent"
+              className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-lg border border-rim hover:border-accent/50"
             >
               <RefreshCw size={13} />
               {T.app.newImage}
