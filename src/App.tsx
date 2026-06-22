@@ -12,8 +12,11 @@ import ExifPanel from './components/ExifPanel'
 import HistogramPanel from './components/HistogramPanel'
 import ExportPanel from './components/ExportPanel'
 import ConsentBanner from './components/ConsentBanner'
+import NotFound from './components/NotFound'
 
 export default function App() {
+  if (window.location.pathname !== '/') return <NotFound />
+
   const { lang, setLang } = useLang()
   const T = translations[lang]
   const [views, setViews] = useState<ProcessedView[]>([])

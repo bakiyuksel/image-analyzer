@@ -84,6 +84,11 @@ export const translations = {
       accept: 'Accepteren',
       decline: 'Weigeren',
     },
+    notFound: {
+      code: '404',
+      title: 'Pagina niet gevonden',
+      back: 'Terug naar home',
+    },
   },
 
   en: {
@@ -168,6 +173,11 @@ export const translations = {
       message: 'This app uses Sentry for error reporting and session recording to improve quality. No images are sent — only technical error and session data.',
       accept: 'Accept',
       decline: 'Decline',
+    },
+    notFound: {
+      code: '404',
+      title: 'Page not found',
+      back: 'Back to home',
     },
   },
 } as const
