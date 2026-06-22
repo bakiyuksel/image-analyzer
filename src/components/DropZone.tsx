@@ -38,23 +38,29 @@ export default function DropZone({ onFile, onUrl, urlError }: Props) {
   return (
     <div className="flex flex-col min-h-[70vh] gap-3">
       <div
-        className={`flex flex-col flex-1 items-center justify-center rounded-sm border-2 border-dashed cursor-pointer transition-colors select-none ${
-          isDragging
-            ? 'border-accent bg-accent/5 text-accent'
-            : 'border-rim hover:border-accent/60 text-muted hover:text-fg'
+        className={`flex flex-col flex-1 items-center justify-center rounded-sm border-2 border-dashed transition-colors select-none ${
+          isDragging ? 'border-accent bg-accent/5' : 'border-rim'
         }`}
         onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        onClick={() => document.getElementById('file-input')?.click()}
       >
         <Upload
           size={48}
           strokeWidth={1.5}
           className={`mb-5 transition-colors ${isDragging ? 'text-accent' : 'text-muted'}`}
         />
-        <p className="text-xl font-medium mb-2 text-fg">{T.headline}</p>
-        <p className="text-sm text-muted">{T.hint}</p>
+        <p className={`text-xl font-medium mb-2 transition-colors ${isDragging ? 'text-accent' : 'text-fg'}`}>
+          {T.headline}
+        </p>
+        <p className="text-sm text-muted mb-5">{T.hint}</p>
+        <button
+          type="button"
+          onClick={() => document.getElementById('file-input')?.click()}
+          className="px-5 py-2.5 text-sm border border-rim rounded-sm text-muted hover:text-fg hover:border-accent transition-colors cursor-pointer"
+        >
+          {T.uploadButton}
+        </button>
         <input
           id="file-input"
           type="file"
@@ -64,7 +70,7 @@ export default function DropZone({ onFile, onUrl, urlError }: Props) {
         />
       </div>
 
-      <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+      <div className="flex gap-2">
         <input
           type="url"
           placeholder={T.urlPlaceholder}
@@ -74,6 +80,7 @@ export default function DropZone({ onFile, onUrl, urlError }: Props) {
           className="flex-1 bg-surface border border-rim rounded-sm px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
         />
         <button
+          type="button"
           onClick={handleUrlSubmit}
           disabled={!urlInput.trim()}
           className="px-4 py-2 text-sm bg-surface border border-rim rounded-sm text-muted hover:text-fg hover:border-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"

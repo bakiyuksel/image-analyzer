@@ -55,17 +55,19 @@ export default function App() {
     setUrlError(null)
     setLoading(true)
     try {
-      const res = await fetch(url)
+      const res = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`)
+      if (res.status === 422) {
+        setLoading(false)
+        setUrlError(T.dropzone.urlError.cors)
+        return
+      }
       if (!res.ok) throw new Error('http')
-      const contentType = res.headers.get('content-type') ?? ''
-      if (!contentType.startsWith('image/')) throw new Error('not-image')
       const blob = await res.blob()
       const name = url.split('/').pop()?.split('?')[0] ?? 'image'
-      handleFile(new File([blob], name, { type: blob.type || contentType }))
-    } catch (err) {
+      handleFile(new File([blob], name, { type: blob.type }))
+    } catch {
       setLoading(false)
-      const isCors = err instanceof TypeError
-      setUrlError(isCors ? T.dropzone.urlError.cors : T.dropzone.urlError.failed)
+      setUrlError(T.dropzone.urlError.failed)
     }
   }, [handleFile, T.dropzone.urlError])
 
