@@ -1,5 +1,7 @@
 import { Download } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
+import { useLang } from '../lib/lang-context'
+import { translations } from '../lib/i18n'
 
 interface Props {
   file: File
@@ -7,6 +9,9 @@ interface Props {
 }
 
 export default function ExportPanel({ file, views }: Props) {
+  const { lang } = useLang()
+  const T = translations[lang].export
+
   function handleExport() {
     const report = {
       generatedAt: new Date().toISOString(),
@@ -40,15 +45,15 @@ export default function ExportPanel({ file, views }: Props) {
       <div className="border-t border-rim mb-6" />
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-muted uppercase tracking-widest">Export</h2>
-          <p className="text-xs text-muted mt-1 opacity-60">Scores en bestandsinfo als JSON</p>
+          <h2 className="text-sm font-semibold text-muted uppercase tracking-widest">{T.heading}</h2>
+          <p className="text-xs text-muted mt-1 opacity-60">{T.subtitle}</p>
         </div>
         <button
           onClick={handleExport}
           className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-sm border border-rim hover:border-accent"
         >
           <Download size={13} />
-          Download rapport
+          {T.button}
         </button>
       </div>
     </div>

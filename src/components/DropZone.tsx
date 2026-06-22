@@ -1,11 +1,15 @@
 import { useCallback, useState } from 'react'
 import { Upload } from 'lucide-react'
+import { useLang } from '../lib/lang-context'
+import { translations } from '../lib/i18n'
 
 interface Props {
   onFile: (file: File) => void
 }
 
 export default function DropZone({ onFile }: Props) {
+  const { lang } = useLang()
+  const T = translations[lang].dropzone
   const [isDragging, setIsDragging] = useState(false)
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -37,8 +41,8 @@ export default function DropZone({ onFile }: Props) {
         strokeWidth={1.5}
         className={`mb-5 transition-colors ${isDragging ? 'text-accent' : 'text-muted'}`}
       />
-      <p className="text-xl font-medium mb-2 text-fg">Sleep een afbeelding hierheen</p>
-      <p className="text-sm text-muted">of klik om te bladeren — JPG, PNG, WebP, AVIF</p>
+      <p className="text-xl font-medium mb-2 text-fg">{T.headline}</p>
+      <p className="text-sm text-muted">{T.hint}</p>
       <input
         id="file-input"
         type="file"

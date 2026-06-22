@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import exifr from 'exifr'
 import { AlertTriangle, CheckCircle, ImageOff } from 'lucide-react'
+import { useLang } from '../lib/lang-context'
+import { translations } from '../lib/i18n'
+import type { Lang } from '../lib/i18n'
 
 interface ExifData {
   Make?: string
@@ -33,66 +36,70 @@ function parseExifDate(d: Date | string | undefined): number | null {
   return isNaN(t) ? null : t
 }
 
-function analyzeExif(data: ExifData | null, hasThumb: boolean, thumbMismatch: boolean, fileLastModified: number): Flag[] {
-  if (!data) return [{ level: 'warn', text: 'Geen EXIF-data gevonden — foto is mogelijk gestript of nooit met een camera gemaakt.' }]
+function formatDate(d: Date | string | undefined, locale: string): string {
+  if (!d) return '—'
+  if (d instanceof Date) return d.toLocaleString(locale)
+  return String(d)
+}
+
+function analyzeExif(data: ExifData | null, hasThumb: boolean, thumbMismatch: boolean, fileLastModified: number, lang: Lang): Flag[] {
+  const TE = translations[lang].exif
+  const locale = TE.locale
+
+  if (!data) return [{ level: 'warn', text: TE.noData }]
 
   const flags: Flag[] = []
   const software = data.Software?.toLowerCase() ?? ''
   const matchedSoftware = EDIT_SOFTWARE.find(s => software.includes(s))
 
   if (matchedSoftware) {
-    flags.push({ level: 'alert', text: `Software-veld bevat "${data.Software}" — direct bewijs dat de foto door bewerkingssoftware is gegaan.` })
+    flags.push({ level: 'alert', text: TE.softwareFlag(data.Software!) })
   }
 
   if (!data.Make && !data.Model) {
-    flags.push({ level: 'warn', text: 'Camera make/model ontbreekt — originele opnamen bevatten dit normaal altijd.' })
+    flags.push({ level: 'warn', text: TE.noCamera })
   }
 
   if (!data.DateTimeOriginal && data.DateTimeDigitized) {
-    flags.push({ level: 'warn', text: 'DateTimeOriginal ontbreekt maar DateTimeDigitized aanwezig — wijst op herverwerking of export.' })
+    flags.push({ level: 'warn', text: TE.noOriginalDate })
   }
 
   if (!data.DateTimeOriginal && !data.DateTimeDigitized && !data.DateTime) {
-    flags.push({ level: 'warn', text: 'Alle datumvelden ontbreken — gestripte EXIF of synthetisch gegenereerd beeld.' })
+    flags.push({ level: 'warn', text: TE.noDates })
   }
 
-  // Timeline: opnamedatum mag niet later zijn dan bestandsdatum
   const captureTime = parseExifDate(data.DateTimeOriginal)
   if (captureTime != null && captureTime > fileLastModified + 60_000) {
     flags.push({
       level: 'alert',
-      text: `Opnamedatum (${formatDate(data.DateTimeOriginal)}) ligt NA bestandsdatum (${new Date(fileLastModified).toLocaleString('nl-NL')}) — onmogelijk bij een authentiek bestand.`,
+      text: TE.timelineAlert(
+        formatDate(data.DateTimeOriginal, locale),
+        new Date(fileLastModified).toLocaleString(locale),
+      ),
     })
   }
 
-  // GPS datum vs opnamedatum
   if (data.GPSDateStamp && data.DateTimeOriginal) {
     const gpsDate = String(data.GPSDateStamp).replace(/:/g, '-').slice(0, 10)
     const captureDate = captureTime != null
       ? new Date(captureTime).toISOString().slice(0, 10)
       : String(data.DateTimeOriginal).replace(/^(\d{4}):(\d{2}):(\d{2}).*/, '$1-$2-$3').slice(0, 10)
     if (gpsDate && captureDate && gpsDate !== captureDate) {
-      flags.push({ level: 'warn', text: `GPS-datum (${data.GPSDateStamp}) wijkt af van opnamedatum — locatie mogelijk achteraf toegevoegd.` })
+      flags.push({ level: 'warn', text: TE.gpsMismatch(data.GPSDateStamp) })
     }
   } else if ((data.GPSLatitude != null || data.GPSLongitude != null) && !data.GPSDateStamp) {
-    flags.push({ level: 'warn', text: 'GPS-coördinaten aanwezig maar GPS-datumstempel ontbreekt — inconsistente metadata.' })
+    flags.push({ level: 'warn', text: TE.gpsNoDate })
   }
 
   if (hasThumb && thumbMismatch) {
-    flags.push({ level: 'alert', text: 'Embedded thumbnail matcht niet met de hoofdafbeelding — klassiek teken van bewerking na export.' })
+    flags.push({ level: 'alert', text: TE.thumbMismatch })
   }
 
   if (flags.length === 0) {
-    flags.push({ level: 'ok', text: 'Geen verdachte metadata-indicatoren gevonden.' })
+    flags.push({ level: 'ok', text: TE.allOk })
   }
 
   return flags
-}
-
-function formatDate(d?: Date | string): string {
-  if (!d) return '—'
-  if (d instanceof Date) return d.toLocaleString('nl-NL')
-  return String(d)
 }
 
 function colorSpaceLabel(cs?: number): string {
@@ -107,6 +114,9 @@ interface Props {
 }
 
 export default function ExifPanel({ file, originalDataUrl }: Props) {
+  const { lang } = useLang()
+  const TE = translations[lang].exif
+
   const [exif, setExif] = useState<ExifData | null>(null)
   const [thumbUrl, setThumbUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -134,10 +144,8 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
     return () => { cancelled = true }
   }, [file])
 
-  // Simple thumbnail mismatch: compare thumbnail dimensions vs reported EXIF dimensions
-  const thumbMismatch = false // visual comparison only — user judges
-
-  const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch, file.lastModified)
+  const thumbMismatch = false
+  const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch, file.lastModified, lang)
 
   const LEVEL_ICON = {
     alert: <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />,
@@ -151,27 +159,26 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
   }
 
   const rows: [string, string][] = exif ? [
-    ['Make', exif.Make ?? '—'],
-    ['Model', exif.Model ?? '—'],
-    ['Software', exif.Software ?? '—'],
-    ['Opnamedatum', formatDate(exif.DateTimeOriginal)],
-    ['Digitalisatiedatum', formatDate(exif.DateTimeDigitized)],
-    ['Bestandsdatum', formatDate(exif.DateTime)],
-    ['GPS', exif.GPSLatitude != null ? `${exif.GPSLatitude.toFixed(5)}, ${exif.GPSLongitude?.toFixed(5)}` : '—'],
-    ['Kleurruimte', colorSpaceLabel(exif.ColorSpace)],
-    ['Afmetingen (EXIF)', exif.ExifImageWidth ? `${exif.ExifImageWidth} × ${exif.ExifImageHeight}` : '—'],
+    [TE.rowLabels.make, exif.Make ?? '—'],
+    [TE.rowLabels.model, exif.Model ?? '—'],
+    [TE.rowLabels.software, exif.Software ?? '—'],
+    [TE.rowLabels.captureDate, formatDate(exif.DateTimeOriginal, TE.locale)],
+    [TE.rowLabels.digitizationDate, formatDate(exif.DateTimeDigitized, TE.locale)],
+    [TE.rowLabels.fileDate, formatDate(exif.DateTime, TE.locale)],
+    [TE.rowLabels.gps, exif.GPSLatitude != null ? `${exif.GPSLatitude.toFixed(5)}, ${exif.GPSLongitude?.toFixed(5)}` : '—'],
+    [TE.rowLabels.colorSpace, colorSpaceLabel(exif.ColorSpace)],
+    [TE.rowLabels.dimensions, exif.ExifImageWidth ? `${exif.ExifImageWidth} × ${exif.ExifImageHeight}` : '—'],
   ] : []
 
   return (
     <div className="mt-8">
       <div className="border-t border-rim mb-6" />
-      <h2 className="text-sm font-semibold text-muted uppercase tracking-widest mb-4">EXIF Metadata</h2>
+      <h2 className="text-sm font-semibold text-muted uppercase tracking-widest mb-4">{TE.heading}</h2>
 
       {loading ? (
-        <p className="text-sm text-muted">Metadata laden…</p>
+        <p className="text-sm text-muted">{TE.loading}</p>
       ) : (
         <div className="flex gap-8 items-start">
-          {/* Flags */}
           <div className="flex flex-col gap-2 flex-1">
             {flags.map((f, i) => (
               <div key={i} className="flex gap-2 text-sm">
@@ -180,7 +187,6 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
               </div>
             ))}
 
-            {/* Metadata tabel */}
             {rows.length > 0 && (
               <table className="mt-4 text-sm border-collapse w-full max-w-lg">
                 <tbody>
@@ -195,30 +201,27 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
             )}
           </div>
 
-          {/* Thumbnail vergelijking */}
           {thumbUrl && (
             <div className="shrink-0">
-              <p className="text-xs text-muted mb-2 uppercase tracking-wide">Thumbnail vs origineel</p>
+              <p className="text-xs text-muted mb-2 uppercase tracking-wide">{TE.thumbSection}</p>
               <div className="flex gap-3 items-start">
                 <div className="text-center">
-                  <img src={thumbUrl} alt="Embedded thumbnail" className="w-32 h-24 object-contain bg-bg border border-rim rounded-sm" />
-                  <p className="text-xs text-muted mt-1">Thumbnail</p>
+                  <img src={thumbUrl} alt={TE.thumbLabel} className="w-32 h-24 object-contain bg-bg border border-rim rounded-sm" />
+                  <p className="text-xs text-muted mt-1">{TE.thumbLabel}</p>
                 </div>
                 <div className="text-center">
-                  <img src={originalDataUrl} alt="Origineel" className="w-32 h-24 object-contain bg-bg border border-rim rounded-sm" />
-                  <p className="text-xs text-muted mt-1">Origineel</p>
+                  <img src={originalDataUrl} alt={TE.originalLabel} className="w-32 h-24 object-contain bg-bg border border-rim rounded-sm" />
+                  <p className="text-xs text-muted mt-1">{TE.originalLabel}</p>
                 </div>
               </div>
-              <p className="text-xs text-muted mt-2 max-w-[17rem] leading-relaxed">
-                Als thumbnail en origineel duidelijk verschillen is de foto na de thumbnailgeneratie bewerkt.
-              </p>
+              <p className="text-xs text-muted mt-2 max-w-[17rem] leading-relaxed">{TE.thumbNote}</p>
             </div>
           )}
 
           {!thumbUrl && !loading && (
             <div className="shrink-0 flex flex-col items-center gap-2 text-muted">
               <ImageOff size={24} strokeWidth={1.5} />
-              <p className="text-xs">Geen embedded thumbnail</p>
+              <p className="text-xs">{TE.noThumb}</p>
             </div>
           )}
         </div>

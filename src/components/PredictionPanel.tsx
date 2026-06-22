@@ -1,67 +1,42 @@
 import { AlertTriangle, ShieldAlert, ShieldCheck } from 'lucide-react'
 import type { ProcessedView, Prediction } from '../types/image'
+import { useLang } from '../lib/lang-context'
+import { translations } from '../lib/i18n'
+import type { Lang } from '../lib/i18n'
 
-function buildPredictions(views: ProcessedView[]): Prediction[] {
+function buildPredictions(views: ProcessedView[], lang: Lang): Prediction[] {
+  const T = translations[lang].prediction
   const predictions: Prediction[] = []
 
   for (const view of views) {
     if (view.score == null) continue
+    const score = (view.score * 100).toFixed(1)
 
     if (view.definition.id === 'ela') {
       if (view.score > 0.16) {
-        predictions.push({
-          level: 'alert',
-          title: 'Hoge ELA-afwijking',
-          detail:
-            `Score: ${(view.score * 100).toFixed(1)}% — Meerdere zones reageren significant anders op JPEG re-compressie dan de omgeving. Dit is een sterke indicator van copy-paste, lokale retouche of compositing. Bekijk de ELA-view op heldere vlekken.`,
-        })
+        predictions.push({ level: 'alert', title: T.elaHighTitle, detail: T.elaHighDetail(score) })
       } else if (view.score > 0.08) {
-        predictions.push({
-          level: 'warn',
-          title: 'Matige ELA-afwijking',
-          detail:
-            `Score: ${(view.score * 100).toFixed(1)}% — Lichte JPEG-compressie-inconsistenties aanwezig. Kan duiden op lichte bewerkingen, meerdere opslagrondes of zwaar bijgesneden gebieden.`,
-        })
+        predictions.push({ level: 'warn', title: T.elaWarnTitle, detail: T.elaWarnDetail(score) })
       }
     }
 
     if (view.definition.id === 'noise-map') {
       if (view.score > 0.55) {
-        predictions.push({
-          level: 'alert',
-          title: 'Sterk wisselend ruispatroon',
-          detail:
-            `Score: ${(view.score * 100).toFixed(1)}% — Het ruisniveau varieert significant tussen gebieden. Kloonstempels, inpainting of ingeplakte elementen van een andere camera missen de organische ruis van de rest van de foto.`,
-        })
+        predictions.push({ level: 'alert', title: T.noiseHighTitle, detail: T.noiseHighDetail(score) })
       } else if (view.score > 0.35) {
-        predictions.push({
-          level: 'warn',
-          title: 'Wisselend ruispatroon',
-          detail:
-            `Score: ${(view.score * 100).toFixed(1)}% — Lichte inconsistentie in het ruispatroon. Kan wijzen op zachte retouche, content-aware fill of sterk verschil in scherpte tussen gebieden.`,
-        })
+        predictions.push({ level: 'warn', title: T.noiseWarnTitle, detail: T.noiseWarnDetail(score) })
       }
     }
 
     if (view.definition.id === 'sobel') {
       if (view.score > 0.25) {
-        predictions.push({
-          level: 'warn',
-          title: 'Opvallend veel scherpe randen',
-          detail:
-            `Score: ${(view.score * 100).toFixed(1)}% — Hoge gemiddelde randsterkte. Controleer de Edge Detection-view op halo's of te strak uitgesneden objecten die wijzen op compositing.`,
-        })
+        predictions.push({ level: 'warn', title: T.sobelWarnTitle, detail: T.sobelWarnDetail(score) })
       }
     }
   }
 
   if (predictions.length === 0) {
-    predictions.push({
-      level: 'ok',
-      title: 'Geen duidelijke manipulatie-indicatoren',
-      detail:
-        'De geanalyseerde metrics tonen geen sterke tekenen van bewerking. Dit sluit manipulatie niet uit — beoordeel de views ook visueel, met name ELA en Noise Map.',
-    })
+    predictions.push({ level: 'ok', title: T.okTitle, detail: T.okDetail })
   }
 
   return predictions
@@ -93,22 +68,20 @@ interface Props {
 }
 
 export default function PredictionPanel({ views }: Props) {
-  const predictions = buildPredictions(views)
+  const { lang } = useLang()
+  const predictions = buildPredictions(views, lang)
 
   return (
     <div className="mt-8">
       <div className="border-t border-rim mb-6" />
       <h2 className="text-sm font-semibold text-muted uppercase tracking-widest mb-4">
-        Analyse
+        {translations[lang].prediction.heading}
       </h2>
       <div className="flex flex-col gap-3">
         {predictions.map((p, i) => {
           const s = LEVEL_STYLES[p.level]
           return (
-            <div
-              key={i}
-              className={`flex gap-3 px-4 py-3 rounded-sm border ${s.border} ${s.bg}`}
-            >
+            <div key={i} className={`flex gap-3 px-4 py-3 rounded-sm border ${s.border} ${s.bg}`}>
               {s.icon}
               <div>
                 <p className={`text-sm font-semibold mb-0.5 ${s.title}`}>{p.title}</p>

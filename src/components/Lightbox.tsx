@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { X, ZoomIn } from 'lucide-react'
 import type { ProcessedView } from '../types/image'
+import { useLang } from '../lib/lang-context'
+import { translations, viewDescriptions } from '../lib/i18n'
 
 interface Props {
   view: ProcessedView
@@ -11,6 +13,9 @@ const MIN_ZOOM = 1
 const MAX_ZOOM = 8
 
 export default function Lightbox({ view, onClose }: Props) {
+  const { lang } = useLang()
+  const T = translations[lang].lightbox
+  const description = viewDescriptions[view.definition.id]?.[lang] ?? view.definition.description
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const dragging = useRef(false)
@@ -67,7 +72,7 @@ export default function Lightbox({ view, onClose }: Props) {
       <button
         className="absolute top-4 right-4 p-2 text-muted hover:text-fg transition-colors rounded-sm hover:bg-surface z-10"
         onClick={onClose}
-        title="Sluiten (Escape)"
+        title={T.close}
       >
         <X size={22} />
       </button>
@@ -77,17 +82,17 @@ export default function Lightbox({ view, onClose }: Props) {
         <button
           className="absolute bottom-4 left-4 flex items-center gap-1.5 text-xs text-muted hover:text-fg px-2 py-1.5 border border-rim rounded-sm bg-surface/80 z-10"
           onClick={e => { e.stopPropagation(); resetZoom() }}
-          title="Zoom resetten"
+          title={T.close}
         >
           <ZoomIn size={13} />
-          {zoom.toFixed(1)}× — reset
+          {zoom.toFixed(1)}× — {T.reset}
         </button>
       )}
 
       {/* Hint */}
       {zoom === 1 && (
         <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted/50 pointer-events-none">
-          Scroll om in te zoomen · Sleep om te pannen
+          {T.zoomHint}
         </p>
       )}
 
@@ -121,7 +126,7 @@ export default function Lightbox({ view, onClose }: Props) {
         <div className="text-center border-t border-rim pt-4 w-full">
           <p className="text-accent font-semibold text-base mb-1">{view.definition.name}</p>
           <p className="text-muted text-sm max-w-lg mx-auto leading-relaxed">
-            {view.definition.description}
+            {description}
           </p>
         </div>
       </div>
