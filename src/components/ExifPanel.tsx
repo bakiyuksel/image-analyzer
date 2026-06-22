@@ -25,7 +25,15 @@ interface Flag {
 
 const EDIT_SOFTWARE = ['photoshop', 'gimp', 'lightroom', 'canva', 'picsart', 'snapseed', 'facetune', 'meitu', 'pixlr']
 
-function analyzeExif(data: ExifData | null, hasThumb: boolean, thumbMismatch: boolean): Flag[] {
+function parseExifDate(d: Date | string | undefined): number | null {
+  if (!d) return null
+  if (d instanceof Date) return isNaN(d.getTime()) ? null : d.getTime()
+  const normalized = String(d).replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
+  const t = new Date(normalized).getTime()
+  return isNaN(t) ? null : t
+}
+
+function analyzeExif(data: ExifData | null, hasThumb: boolean, thumbMismatch: boolean, fileLastModified: number): Flag[] {
   if (!data) return [{ level: 'warn', text: 'Geen EXIF-data gevonden — foto is mogelijk gestript of nooit met een camera gemaakt.' }]
 
   const flags: Flag[] = []
@@ -48,7 +56,25 @@ function analyzeExif(data: ExifData | null, hasThumb: boolean, thumbMismatch: bo
     flags.push({ level: 'warn', text: 'Alle datumvelden ontbreken — gestripte EXIF of synthetisch gegenereerd beeld.' })
   }
 
-  if ((data.GPSLatitude != null || data.GPSLongitude != null) && !data.GPSDateStamp) {
+  // Timeline: opnamedatum mag niet later zijn dan bestandsdatum
+  const captureTime = parseExifDate(data.DateTimeOriginal)
+  if (captureTime != null && captureTime > fileLastModified + 60_000) {
+    flags.push({
+      level: 'alert',
+      text: `Opnamedatum (${formatDate(data.DateTimeOriginal)}) ligt NA bestandsdatum (${new Date(fileLastModified).toLocaleString('nl-NL')}) — onmogelijk bij een authentiek bestand.`,
+    })
+  }
+
+  // GPS datum vs opnamedatum
+  if (data.GPSDateStamp && data.DateTimeOriginal) {
+    const gpsDate = String(data.GPSDateStamp).replace(/:/g, '-').slice(0, 10)
+    const captureDate = captureTime != null
+      ? new Date(captureTime).toISOString().slice(0, 10)
+      : String(data.DateTimeOriginal).replace(/^(\d{4}):(\d{2}):(\d{2}).*/, '$1-$2-$3').slice(0, 10)
+    if (gpsDate && captureDate && gpsDate !== captureDate) {
+      flags.push({ level: 'warn', text: `GPS-datum (${data.GPSDateStamp}) wijkt af van opnamedatum — locatie mogelijk achteraf toegevoegd.` })
+    }
+  } else if ((data.GPSLatitude != null || data.GPSLongitude != null) && !data.GPSDateStamp) {
     flags.push({ level: 'warn', text: 'GPS-coördinaten aanwezig maar GPS-datumstempel ontbreekt — inconsistente metadata.' })
   }
 
@@ -111,7 +137,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
   // Simple thumbnail mismatch: compare thumbnail dimensions vs reported EXIF dimensions
   const thumbMismatch = false // visual comparison only — user judges
 
-  const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch)
+  const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch, file.lastModified)
 
   const LEVEL_ICON = {
     alert: <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />,

@@ -260,6 +260,188 @@ async function ela(img: HTMLImageElement): Promise<{ dataUrl: string; score: num
   return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
 }
 
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise(resolve => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.src = src
+  })
+}
+
+// ─── 1D Cooley-Tukey FFT (in-place, power-of-2 length) ───────────────────────
+
+function fft1d(re: Float64Array, im: Float64Array): void {
+  const n = re.length
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1
+    for (; j & bit; bit >>= 1) j ^= bit
+    j ^= bit
+    if (i < j) {
+      let t = re[i]; re[i] = re[j]; re[j] = t
+      t = im[i]; im[i] = im[j]; im[j] = t
+    }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = (-2 * Math.PI) / len
+    const wRe = Math.cos(ang), wIm = Math.sin(ang)
+    for (let i = 0; i < n; i += len) {
+      let xRe = 1, xIm = 0
+      for (let j = 0; j < (len >> 1); j++) {
+        const uRe = re[i + j], uIm = im[i + j]
+        const vRe = re[i + j + (len >> 1)] * xRe - im[i + j + (len >> 1)] * xIm
+        const vIm = re[i + j + (len >> 1)] * xIm + im[i + j + (len >> 1)] * xRe
+        re[i + j] = uRe + vRe; im[i + j] = uIm + vIm
+        re[i + j + (len >> 1)] = uRe - vRe; im[i + j + (len >> 1)] = uIm - vIm
+        const nxRe = xRe * wRe - xIm * wIm
+        xIm = xRe * wIm + xIm * wRe
+        xRe = nxRe
+      }
+    }
+  }
+}
+
+// ─── JPEG Ghost (multi-quality compression fingerprint) ───────────────────────
+
+async function jpegGhost(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+  const MAX = 800
+  const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight))
+  const W = Math.round(img.naturalWidth * scale), H = Math.round(img.naturalHeight * scale)
+  const N = W * H
+
+  const origCanvas = document.createElement('canvas')
+  origCanvas.width = W; origCanvas.height = H
+  const origCtx = origCanvas.getContext('2d')!
+  origCtx.drawImage(img, 0, 0, W, H)
+  const origData = origCtx.getImageData(0, 0, W, H).data
+
+  const QUALITIES = [0.50, 0.62, 0.72, 0.80, 0.88, 0.95]
+  const errors: Float32Array[] = []
+
+  for (const q of QUALITIES) {
+    const reImg = await loadImage(origCanvas.toDataURL('image/jpeg', q))
+    const tmp = document.createElement('canvas')
+    tmp.width = W; tmp.height = H
+    tmp.getContext('2d')!.drawImage(reImg, 0, 0)
+    const reData = tmp.getContext('2d')!.getImageData(0, 0, W, H).data
+    const err = new Float32Array(N)
+    for (let i = 0; i < N; i++) {
+      const dr = origData[i * 4] - reData[i * 4]
+      const dg = origData[i * 4 + 1] - reData[i * 4 + 1]
+      const db = origData[i * 4 + 2] - reData[i * 4 + 2]
+      err[i] = dr * dr + dg * dg + db * db
+    }
+    errors.push(err)
+  }
+
+  const bestQ = new Uint8Array(N)
+  for (let i = 0; i < N; i++) {
+    let minErr = Infinity, best = 0
+    for (let q = 0; q < QUALITIES.length; q++) {
+      if (errors[q][i] < minErr) { minErr = errors[q][i]; best = q }
+    }
+    bestQ[i] = best
+  }
+
+  const votes = new Int32Array(QUALITIES.length)
+  for (let i = 0; i < N; i++) votes[bestQ[i]]++
+  let domQ = 0
+  for (let q = 1; q < QUALITIES.length; q++) if (votes[q] > votes[domQ]) domQ = q
+
+  const result = new Uint8ClampedArray(N * 4)
+  for (let i = 0; i < N; i++) {
+    const errAtDom = Math.sqrt(errors[domQ][i])
+    if (bestQ[i] === domQ) {
+      const v = Math.min(50, errAtDom * 0.5)
+      result[i * 4] = result[i * 4 + 1] = result[i * 4 + 2] = v
+    } else {
+      result[i * 4] = Math.min(255, errAtDom * 2.5)
+      result[i * 4 + 1] = Math.min(80, errAtDom * 0.5)
+      result[i * 4 + 2] = 0
+    }
+    result[i * 4 + 3] = 255
+  }
+
+  const small = document.createElement('canvas')
+  small.width = W; small.height = H
+  small.getContext('2d')!.putImageData(new ImageData(result, W, H), 0, 0)
+
+  const out = document.createElement('canvas')
+  out.width = img.naturalWidth; out.height = img.naturalHeight
+  const oCtx = out.getContext('2d')!
+  oCtx.imageSmoothingEnabled = false
+  oCtx.drawImage(small, 0, 0, out.width, out.height)
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+}
+
+// ─── FFT Spectrum (2D Fourier transform visualization) ────────────────────────
+
+async function fftSpectrum(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+  const SIZE = 256
+
+  const small = document.createElement('canvas')
+  small.width = SIZE; small.height = SIZE
+  small.getContext('2d')!.drawImage(img, 0, 0, SIZE, SIZE)
+  const pixels = small.getContext('2d')!.getImageData(0, 0, SIZE, SIZE).data
+
+  const re = new Float64Array(SIZE * SIZE)
+  const im = new Float64Array(SIZE * SIZE)
+  for (let y = 0; y < SIZE; y++) {
+    const wy = 0.54 - 0.46 * Math.cos((2 * Math.PI * y) / (SIZE - 1))
+    for (let x = 0; x < SIZE; x++) {
+      const wx = 0.54 - 0.46 * Math.cos((2 * Math.PI * x) / (SIZE - 1))
+      const i = y * SIZE + x
+      re[i] = (0.299 * pixels[i * 4] + 0.587 * pixels[i * 4 + 1] + 0.114 * pixels[i * 4 + 2]) / 255 * wx * wy
+    }
+  }
+
+  const rowRe = new Float64Array(SIZE), rowIm = new Float64Array(SIZE)
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) { rowRe[x] = re[y * SIZE + x]; rowIm[x] = im[y * SIZE + x] }
+    fft1d(rowRe, rowIm)
+    for (let x = 0; x < SIZE; x++) { re[y * SIZE + x] = rowRe[x]; im[y * SIZE + x] = rowIm[x] }
+  }
+  const colRe = new Float64Array(SIZE), colIm = new Float64Array(SIZE)
+  for (let x = 0; x < SIZE; x++) {
+    for (let y = 0; y < SIZE; y++) { colRe[y] = re[y * SIZE + x]; colIm[y] = im[y * SIZE + x] }
+    fft1d(colRe, colIm)
+    for (let y = 0; y < SIZE; y++) { re[y * SIZE + x] = colRe[y]; im[y * SIZE + x] = colIm[y] }
+  }
+
+  const half = SIZE >> 1
+  const shifted = new Float64Array(SIZE * SIZE)
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      const mag = Math.log1p(Math.sqrt(re[y * SIZE + x] ** 2 + im[y * SIZE + x] ** 2))
+      shifted[((y + half) % SIZE) * SIZE + ((x + half) % SIZE)] = mag
+    }
+  }
+
+  let maxMag = 0
+  for (let i = 0; i < shifted.length; i++) if (shifted[i] > maxMag) maxMag = shifted[i]
+
+  const result = new Uint8ClampedArray(SIZE * SIZE * 4)
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const v = Math.round((shifted[i] / maxMag) * 255)
+    result[i * 4] = result[i * 4 + 1] = result[i * 4 + 2] = v
+    result[i * 4 + 3] = 255
+  }
+
+  const specCanvas = document.createElement('canvas')
+  specCanvas.width = SIZE; specCanvas.height = SIZE
+  specCanvas.getContext('2d')!.putImageData(new ImageData(result, SIZE, SIZE), 0, 0)
+
+  const out = document.createElement('canvas')
+  out.width = 512; out.height = 512
+  const oCtx = out.getContext('2d')!
+  oCtx.fillStyle = '#000'
+  oCtx.fillRect(0, 0, 512, 512)
+  oCtx.imageSmoothingEnabled = false
+  oCtx.drawImage(specCanvas, 0, 0, 512, 512)
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+}
+
 // ─── view definitions ─────────────────────────────────────────────────────────
 
 export const VIEW_DEFINITIONS: ViewDefinition[] = [
@@ -341,6 +523,18 @@ export const VIEW_DEFINITIONS: ViewDefinition[] = [
     name: 'Blue Channel',
     description: 'Blauw kanaal — bevat het meeste sensorruis. Compositing van beelden van verschillende bronnen is hier het makkelijkst te herkennen aan een abrupt veranderend ruispatroon.',
     canvasTransform: blueChannel,
+  },
+  {
+    id: 'jpeg-ghost',
+    name: 'JPEG Ghost',
+    description: 'Comprimeert de afbeelding op 6 kwaliteitsniveaus en vergelijkt per pixel welk niveau het best aansluit. Authentieke gebieden clusteren rond één kwaliteitsniveau (donker). Ingeplakte elementen van een andere bron — anders gecomprimeerd — lichten op in oranje-rood.',
+    asyncTransform: jpegGhost,
+  },
+  {
+    id: 'fft-spectrum',
+    name: 'FFT Spectrum',
+    description: 'Frequentiedomein via 2D Fourier-transformatie. Het spectrum toont de verdeling van ruimtelijke frequenties. AI-gegenereerde beelden en upscaling tonen afwijkende patronen. Periodieke stippen of lijnen wijzen op tiling, interpolatie-artefacten of herhalende textuurpatronen.',
+    asyncTransform: fftSpectrum,
   },
 ]
 

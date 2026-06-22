@@ -8,6 +8,7 @@ import Lightbox from './components/Lightbox'
 import PredictionPanel from './components/PredictionPanel'
 import ExifPanel from './components/ExifPanel'
 import HistogramPanel from './components/HistogramPanel'
+import ExportPanel from './components/ExportPanel'
 
 export default function App() {
   const [views, setViews] = useState<ProcessedView[]>([])
@@ -70,6 +71,7 @@ export default function App() {
                 originalDataUrl={views.find(v => v.definition.id === 'original')?.dataUrl ?? ''}
               />
             )}
+            {file && <ExportPanel file={file} views={views} />}
           </>
         )}
       </main>
