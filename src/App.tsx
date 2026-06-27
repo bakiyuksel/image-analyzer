@@ -17,6 +17,7 @@ import NotFound from './components/NotFound'
 import VerdictBanner from './components/VerdictBanner'
 import UrlModal from './components/UrlModal'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 export default function App() {
   if (window.location.pathname !== '/') return <NotFound />
@@ -187,6 +188,7 @@ export default function App() {
 
       <ConsentBanner />
       <Analytics />
+      <SpeedInsights />
     </div>
   )
 }
