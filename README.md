@@ -56,6 +56,7 @@
 - `maplibre-gl` — GPS location map (CARTO dark-matter tiles)
 - `@sentry/react` — error monitoring, session replay, profiling, logging (consent-gated)
 - `@vercel/analytics` — page view analytics
+- `posthog-js` — product analytics via PostHog EU Cloud
 
 ### Run locally
 
@@ -68,7 +69,12 @@ npm run dev
 
 Requires Node.js ≥ 20.19.
 
-Copy `.env.example` to `.env` and fill in your Sentry DSN if you want error monitoring locally.
+Copy `.env.example` to `.env` and fill in:
+
+| Variable | Description |
+|---|---|
+| `VITE_SENTRY_DSN` | Sentry DSN — for local error monitoring |
+| `VITE_POSTHOG_KEY` | PostHog project API key (`phc_...`) — for local analytics |
 
 ---
 
@@ -118,6 +124,7 @@ Copy `.env.example` to `.env` and fill in your Sentry DSN if you want error moni
 - `maplibre-gl` — GPS-locatiekaart (CARTO dark-matter tiles)
 - `@sentry/react` — foutmonitoring, sessie-replay, profiling, logging (consent-vereist)
 - `@vercel/analytics` — paginaweergave-analytics
+- `posthog-js` — product analytics via PostHog EU Cloud
 
 ### Lokaal draaien
 
@@ -130,4 +137,9 @@ npm run dev
 
 Node.js ≥ 20.19 vereist.
 
-Kopieer `.env.example` naar `.env` en vul je Sentry DSN in als je foutmonitoring lokaal wil.
+Kopieer `.env.example` naar `.env` en vul in:
+
+| Variabele | Beschrijving |
+|---|---|
+| `VITE_SENTRY_DSN` | Sentry DSN — voor lokale foutmonitoring |
+| `VITE_POSTHOG_KEY` | PostHog project API key (`phc_...`) — voor lokale analytics |
