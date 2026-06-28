@@ -90,7 +90,7 @@ export const translations = {
       button: 'Download rapport',
     },
     consent: {
-      message: 'Deze app gebruikt Sentry voor foutrapportage en sessie-opnames om de kwaliteit te verbeteren. Er worden geen afbeeldingen verstuurd — alleen technische fout- en sessiedata.',
+      message: 'Deze app gebruikt Sentry (foutrapportage) en PostHog (analytics) om de kwaliteit te verbeteren. Er worden geen afbeeldingen verstuurd — alleen technische fout- en gebruiksdata.',
       accept: 'Accepteren',
       decline: 'Weigeren',
     },
@@ -202,7 +202,7 @@ export const translations = {
       button: 'Download report',
     },
     consent: {
-      message: 'This app uses Sentry for error reporting and session recording to improve quality. No images are sent — only technical error and session data.',
+      message: 'This app uses Sentry (error reporting) and PostHog (analytics) to improve quality. No images are sent — only technical error and usage data.',
       accept: 'Accept',
       decline: 'Decline',
     },

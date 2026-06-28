@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
-import { initSentry } from '../instrument'
+import { initSentry, initPosthog } from '../instrument'
 
 const CONSENT_KEY = 'sentry_consent'
 
@@ -15,6 +15,7 @@ export default function ConsentBanner() {
   function accept() {
     localStorage.setItem(CONSENT_KEY, 'accepted')
     initSentry()
+    initPosthog()
     setVisible(false)
   }
 

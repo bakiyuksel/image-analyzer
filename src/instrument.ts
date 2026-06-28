@@ -28,3 +28,16 @@ export function initSentry() {
 export function hasSentryConsent(): boolean {
   return localStorage.getItem('sentry_consent') === 'accepted'
 }
+
+export function initPosthog() {
+  const key = import.meta.env.VITE_POSTHOG_KEY
+  if (!key) return
+  import('posthog-js').then(({ default: posthog }) => {
+    posthog.init(key, {
+      api_host: 'https://eu.i.posthog.com',
+      person_profiles: 'identified_only',
+      capture_pageview: true,
+      capture_pageleave: true,
+    })
+  })
+}
