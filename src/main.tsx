@@ -12,7 +12,7 @@ if (hasSentryConsent()) {
   initSentry()
 }
 
-posthog.init('phc_CavPDWAdt9cBKwSPuetkoZ8uKUDN5RAgcdyPsTWGXrMQ', {
+posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
   api_host: 'https://eu.i.posthog.com',
   person_profiles: 'identified_only',
   capture_pageview: true,
