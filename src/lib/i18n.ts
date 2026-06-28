@@ -6,6 +6,9 @@ export const translations = {
       subtitle: 'Upload een foto om alle views te genereren',
       newImage: 'Nieuwe afbeelding',
       loading: 'Views genereren…',
+      fileTooLarge: 'Bestand te groot (max 100 MB).',
+      fileLoadError: 'Kon de afbeelding niet laden. Controleer of het een geldig afbeeldingsbestand is.',
+      downscaleNotice: 'Afbeelding teruggeschaald naar 2000 px voor verwerking.',
     },
     dropzone: {
       headline: 'Sleep een afbeelding hierheen',
@@ -45,6 +48,24 @@ export const translations = {
         `Score: ${score}% — Hoge gemiddelde randsterkte. Controleer de Edge Detection-view op halo's of te strak uitgesneden objecten die wijzen op compositing.`,
       okTitle: 'Geen duidelijke manipulatie-indicatoren',
       okDetail: 'De geanalyseerde metrics tonen geen sterke tekenen van bewerking. Dit sluit manipulatie niet uit — beoordeel de views ook visueel, met name ELA en Noise Map.',
+      jpegGhostHighTitle: 'Sterke JPEG-kwaliteitsafwijking',
+      jpegGhostHighDetail: (score: string) =>
+        `Score: ${score}% — Grote zones reageren significant beter op een ander JPEG-kwaliteitsniveau dan de rest. Dit wijst op ingeplakt materiaal van een andere bron. Bekijk de JPEG Ghost-view voor de oranje-rode zones.`,
+      jpegGhostWarnTitle: 'Lichte JPEG-kwaliteitsafwijking',
+      jpegGhostWarnDetail: (score: string) =>
+        `Score: ${score}% — Lichte inconsistentie in JPEG-compressie-kwaliteit. Kan duiden op kleine ingeplakte zones of meerdere opslagslagen.`,
+      cloneHighTitle: 'Waarschijnlijke copy-move detectie',
+      cloneHighDetail: (score: string) =>
+        `Score: ${score}% — Een groot aandeel beeldblokken vertoont herhalingspatronen. Controleer de Clone Detect-view en vergelijk met ELA voor bevestiging.`,
+      cloneWarnTitle: 'Mogelijke kopieerblokken',
+      cloneWarnDetail: (score: string) =>
+        `Score: ${score}% — Herhalende blokpatronen gevonden. Kan een valse positieve zijn bij uniforme vlakken. Vergelijk met de ELA-view.`,
+      fftHighTitle: 'Sterke periodieke artefacten',
+      fftHighDetail: (score: string) =>
+        `Score: ${score}% — Ongewone periodieke pieken in het FFT-spectrum. Kan wijzen op upscaling, AI-generatie of herhalende ingeplakte texturen.`,
+      fftWarnTitle: 'Lichte periodieke componenten',
+      fftWarnDetail: (score: string) =>
+        `Score: ${score}% — Lichte periodieke structuren in het frequentiedomein. Bekijk het FFT Spectrum op regelmatige stippen buiten het centrale kruis.`,
     },
     histogram: {
       heading: 'RGB Histogram',
@@ -118,6 +139,9 @@ export const translations = {
       subtitle: 'Upload an image to generate all views',
       newImage: 'New image',
       loading: 'Generating views…',
+      fileTooLarge: 'File too large (max 100 MB).',
+      fileLoadError: "Could not load the image. Check if it's a valid image file.",
+      downscaleNotice: 'Image downscaled to 2000 px for processing.',
     },
     dropzone: {
       headline: 'Drop an image here',
@@ -157,6 +181,24 @@ export const translations = {
         `Score: ${score}% — High average edge strength. Check the Edge Detection view for halos or overly sharp cutouts indicating compositing.`,
       okTitle: 'No clear manipulation indicators',
       okDetail: 'The analyzed metrics show no strong signs of editing. This does not rule out manipulation — also assess the views visually, especially ELA and Noise Map.',
+      jpegGhostHighTitle: 'Strong JPEG quality deviation',
+      jpegGhostHighDetail: (score: string) =>
+        `Score: ${score}% — Large zones fit a different JPEG quality level significantly better than the rest of the image. This indicates pasted material from a different source. Inspect the JPEG Ghost view for orange-red zones.`,
+      jpegGhostWarnTitle: 'Minor JPEG quality deviation',
+      jpegGhostWarnDetail: (score: string) =>
+        `Score: ${score}% — Minor JPEG compression inconsistencies present. May indicate small pasted zones or multiple save rounds.`,
+      cloneHighTitle: 'Probable copy-move detected',
+      cloneHighDetail: (score: string) =>
+        `Score: ${score}% — A large share of image blocks shows repeating patterns. Check the Clone Detect view and compare with ELA for confirmation.`,
+      cloneWarnTitle: 'Possible cloned blocks',
+      cloneWarnDetail: (score: string) =>
+        `Score: ${score}% — Repeating block patterns found. May be a false positive on uniform areas like sky or walls. Compare with the ELA view.`,
+      fftHighTitle: 'Strong periodic artifacts',
+      fftHighDetail: (score: string) =>
+        `Score: ${score}% — Unusual periodic peaks in the FFT spectrum. May indicate upscaling, AI generation, or repeating pasted textures.`,
+      fftWarnTitle: 'Minor periodic components',
+      fftWarnDetail: (score: string) =>
+        `Score: ${score}% — Minor periodic structures in the frequency domain. Check the FFT Spectrum for evenly spaced dots outside the central cross.`,
     },
     histogram: {
       heading: 'RGB Histogram',

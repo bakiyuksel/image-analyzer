@@ -30,6 +30,33 @@ interface Flag {
 
 const EDIT_SOFTWARE = ['photoshop', 'gimp', 'lightroom', 'canva', 'picsart', 'snapseed', 'facetune', 'meitu', 'pixlr']
 
+async function compareImages(a: string, b: string): Promise<boolean> {
+  const SIZE = 64
+  function toData(src: string): Promise<Uint8ClampedArray> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const cv = document.createElement('canvas')
+        cv.width = SIZE; cv.height = SIZE
+        cv.getContext('2d')!.drawImage(img, 0, 0, SIZE, SIZE)
+        resolve(cv.getContext('2d')!.getImageData(0, 0, SIZE, SIZE).data)
+      }
+      img.onerror = reject
+      img.src = src
+    })
+  }
+  try {
+    const [d1, d2] = await Promise.all([toData(a), toData(b)])
+    let diff = 0
+    for (let i = 0; i < d1.length; i += 4) {
+      diff += Math.abs(d1[i] - d2[i]) + Math.abs(d1[i + 1] - d2[i + 1]) + Math.abs(d1[i + 2] - d2[i + 2])
+    }
+    return diff / (SIZE * SIZE * 3 * 255) > 0.05
+  } catch {
+    return false
+  }
+}
+
 function parseExifDate(d: Date | string | undefined): number | null {
   if (!d) return null
   if (d instanceof Date) return isNaN(d.getTime()) ? null : d.getTime()
@@ -127,10 +154,12 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
 
   const [exif, setExif] = useState<ExifData | null>(null)
   const [thumbUrl, setThumbUrl] = useState<string | null>(null)
+  const [thumbMismatch, setThumbMismatch] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
+    setThumbMismatch(false)
     async function load() {
       setLoading(true)
       try {
@@ -142,7 +171,11 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
         setExif(data ?? null)
         if (thumb) {
           const blob = new Blob([thumb.slice()], { type: 'image/jpeg' })
-          setThumbUrl(URL.createObjectURL(blob))
+          const url = URL.createObjectURL(blob)
+          setThumbUrl(url)
+          compareImages(url, originalDataUrl).then(mismatch => {
+            if (!cancelled) setThumbMismatch(mismatch)
+          })
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -150,9 +183,8 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
     }
     load()
     return () => { cancelled = true }
-  }, [file])
+  }, [file, originalDataUrl])
 
-  const thumbMismatch = false
   const flags = loading ? [] : analyzeExif(exif, thumbUrl != null, thumbMismatch, file.lastModified, lang)
   const gpsLat = exif ? toDecimalDeg(exif.GPSLatitude) : null
   const gpsLng = exif ? toDecimalDeg(exif.GPSLongitude) : null
@@ -189,7 +221,7 @@ export default function ExifPanel({ file, originalDataUrl }: Props) {
         <p className="text-sm text-muted">{TE.loading}</p>
       ) : (
         <>
-        <div className="flex gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           <div className="flex flex-col gap-2 flex-1">
             {flags.map((f, i) => (
               <div key={i} className="flex gap-2 text-sm">

@@ -71,7 +71,7 @@ function saturationChannel(data: ImageData): ImageData {
 
 // ─── clone detection (copy-move heuristic, async) ────────────────────────────
 
-async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string; score: number }> {
   const MAX = 512
   const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight))
   const SW = Math.round(img.naturalWidth * scale), SH = Math.round(img.naturalHeight * scale)
@@ -143,7 +143,8 @@ async function cloneDetect(img: HTMLImageElement): Promise<{ dataUrl: string }> 
     }
   }
 
-  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+  const score = blocks.length > 0 ? suspicious.size / blocks.length : 0
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
 }
 
 // ─── web worker (noiseMap + sobel run off the main thread) ───────────────────
@@ -305,7 +306,7 @@ function fft1d(re: Float64Array, im: Float64Array): void {
 
 // ─── JPEG Ghost (multi-quality compression fingerprint) ───────────────────────
 
-async function jpegGhost(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+async function jpegGhost(img: HTMLImageElement): Promise<{ dataUrl: string; score: number }> {
   const MAX = 800
   const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight))
   const W = Math.round(img.naturalWidth * scale), H = Math.round(img.naturalHeight * scale)
@@ -364,6 +365,12 @@ async function jpegGhost(img: HTMLImageElement): Promise<{ dataUrl: string }> {
     result[i * 4 + 3] = 255
   }
 
+  let nonDomCount = 0
+  for (let i = 0; i < N; i++) {
+    if (bestQ[i] !== domQ) nonDomCount++
+  }
+  const score = nonDomCount / N
+
   const small = document.createElement('canvas')
   small.width = W; small.height = H
   small.getContext('2d')!.putImageData(new ImageData(result, W, H), 0, 0)
@@ -373,12 +380,12 @@ async function jpegGhost(img: HTMLImageElement): Promise<{ dataUrl: string }> {
   const oCtx = out.getContext('2d')!
   oCtx.imageSmoothingEnabled = false
   oCtx.drawImage(small, 0, 0, out.width, out.height)
-  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
 }
 
 // ─── FFT Spectrum (2D Fourier transform visualization) ────────────────────────
 
-async function fftSpectrum(img: HTMLImageElement): Promise<{ dataUrl: string }> {
+async function fftSpectrum(img: HTMLImageElement): Promise<{ dataUrl: string; score: number }> {
   const SIZE = 256
 
   const small = document.createElement('canvas')
@@ -422,6 +429,34 @@ async function fftSpectrum(img: HTMLImageElement): Promise<{ dataUrl: string }> 
   let maxMag = 0
   for (let i = 0; i < shifted.length; i++) if (shifted[i] > maxMag) maxMag = shifted[i]
 
+  // Score: fraction of non-DC spectrum pixels that are statistical outlier peaks
+  let ffSum = 0, ffCount = 0
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      if (!(Math.abs(y - half) <= 8 && Math.abs(x - half) <= 8)) {
+        ffSum += shifted[y * SIZE + x]; ffCount++
+      }
+    }
+  }
+  const ffMean = ffSum / ffCount
+  let ffVar = 0
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      if (!(Math.abs(y - half) <= 8 && Math.abs(x - half) <= 8)) {
+        ffVar += (shifted[y * SIZE + x] - ffMean) ** 2
+      }
+    }
+  }
+  const ffStd = Math.sqrt(ffVar / ffCount)
+  let ffPeaks = 0
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const py = Math.floor(i / SIZE), px = i % SIZE
+    if (!(Math.abs(py - half) <= 8 && Math.abs(px - half) <= 8) && shifted[i] > ffMean + 3 * ffStd) {
+      ffPeaks++
+    }
+  }
+  const score = ffCount > 0 ? ffPeaks / ffCount : 0
+
   const result = new Uint8ClampedArray(SIZE * SIZE * 4)
   for (let i = 0; i < SIZE * SIZE; i++) {
     const v = Math.round((shifted[i] / maxMag) * 255)
@@ -440,7 +475,7 @@ async function fftSpectrum(img: HTMLImageElement): Promise<{ dataUrl: string }> 
   oCtx.fillRect(0, 0, 512, 512)
   oCtx.imageSmoothingEnabled = false
   oCtx.drawImage(specCanvas, 0, 0, 512, 512)
-  return { dataUrl: out.toDataURL('image/jpeg', 0.92) }
+  return { dataUrl: out.toDataURL('image/jpeg', 0.92), score }
 }
 
 // ─── view definitions ─────────────────────────────────────────────────────────
@@ -561,21 +596,22 @@ async function applyView(img: HTMLImageElement, def: ViewDefinition): Promise<{ 
 
 const MAX_DIMENSION = 2000
 
-function downscaleIfNeeded(img: HTMLImageElement): Promise<HTMLImageElement> {
+async function downscaleIfNeeded(img: HTMLImageElement): Promise<{ img: HTMLImageElement; wasDownscaled: boolean }> {
   const { naturalWidth: W, naturalHeight: H } = img
-  if (W <= MAX_DIMENSION && H <= MAX_DIMENSION) return Promise.resolve(img)
+  if (W <= MAX_DIMENSION && H <= MAX_DIMENSION) return { img, wasDownscaled: false }
   const scale = MAX_DIMENSION / Math.max(W, H)
   const sw = Math.round(W * scale), sh = Math.round(H * scale)
   const canvas = document.createElement('canvas')
   canvas.width = sw; canvas.height = sh
   canvas.getContext('2d')!.drawImage(img, 0, 0, sw, sh)
-  return loadImage(canvas.toDataURL('image/jpeg', 0.95))
+  return { img: await loadImage(canvas.toDataURL('image/jpeg', 0.95)), wasDownscaled: true }
 }
 
-export async function processImage(img: HTMLImageElement): Promise<ProcessedView[]> {
-  const src = await downscaleIfNeeded(img)
-  return Promise.all(VIEW_DEFINITIONS.map(async def => {
+export async function processImage(img: HTMLImageElement): Promise<{ views: ProcessedView[]; wasDownscaled: boolean }> {
+  const { img: src, wasDownscaled } = await downscaleIfNeeded(img)
+  const views = await Promise.all(VIEW_DEFINITIONS.map(async def => {
     const { dataUrl, score } = await applyView(src, def)
     return { definition: def, dataUrl, score }
   }))
+  return { views, wasDownscaled }
 }

@@ -10,19 +10,28 @@ interface Props {
 }
 
 function computeVerdict(views: ProcessedView[]) {
-  const ela   = views.find(v => v.definition.id === 'ela')?.score ?? 0
-  const noise = views.find(v => v.definition.id === 'noise-map')?.score ?? 0
-  const sobel = views.find(v => v.definition.id === 'sobel')?.score ?? 0
+  const ela        = views.find(v => v.definition.id === 'ela')?.score ?? 0
+  const noise      = views.find(v => v.definition.id === 'noise-map')?.score ?? 0
+  const sobel      = views.find(v => v.definition.id === 'sobel')?.score ?? 0
+  const jpegGhost  = views.find(v => v.definition.id === 'jpeg-ghost')?.score ?? 0
+  const clone      = views.find(v => v.definition.id === 'clone-detect')?.score ?? 0
+  const fft        = views.find(v => v.definition.id === 'fft-spectrum')?.score ?? 0
 
   let alerts = 0, warns = 0
   if (ela > THRESHOLDS.ela.alert) alerts++; else if (ela > THRESHOLDS.ela.warn) warns++
   if (noise > THRESHOLDS.noise.alert) alerts++; else if (noise > THRESHOLDS.noise.warn) warns++
   if (sobel > THRESHOLDS.sobel.warn) warns++
+  if (jpegGhost > THRESHOLDS['jpeg-ghost'].alert) alerts++; else if (jpegGhost > THRESHOLDS['jpeg-ghost'].warn) warns++
+  if (clone > THRESHOLDS['clone-detect'].alert) alerts++; else if (clone > THRESHOLDS['clone-detect'].warn) warns++
+  if (fft > THRESHOLDS['fft-spectrum'].alert) alerts++; else if (fft > THRESHOLDS['fft-spectrum'].warn) warns++
 
   const score = Math.round(
-    Math.min(1, ela / THRESHOLDS.ela.alert) * 50 +
-    Math.min(1, noise / THRESHOLDS.noise.alert) * 30 +
-    Math.min(1, sobel / THRESHOLDS.sobel.warn) * 20
+    Math.min(1, ela / THRESHOLDS.ela.alert) * 45 +
+    Math.min(1, noise / THRESHOLDS.noise.alert) * 25 +
+    Math.min(1, sobel / THRESHOLDS.sobel.warn) * 15 +
+    Math.min(1, jpegGhost / THRESHOLDS['jpeg-ghost'].alert) * 5 +
+    Math.min(1, clone / THRESHOLDS['clone-detect'].alert) * 8 +
+    Math.min(1, fft / THRESHOLDS['fft-spectrum'].alert) * 2
   )
 
   if (alerts > 0 || warns >= 3) return { level: 'alert' as const, score }

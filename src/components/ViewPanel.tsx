@@ -26,7 +26,8 @@ export default function ViewPanel({ view, onClick }: Props) {
             download={`${view.definition.id}.jpg`}
             className="p-1.5 rounded-lg bg-black/70 text-muted hover:text-accent backdrop-blur-sm block transition-colors"
             onClick={e => e.stopPropagation()}
-            title="Download"
+            title={`Download ${view.definition.name}`}
+            aria-label={`Download ${view.definition.name}`}
           >
             <Download size={14} />
           </a>

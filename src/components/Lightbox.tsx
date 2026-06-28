@@ -80,6 +80,7 @@ export default function Lightbox({ view, onClose }: Props) {
         className="absolute top-4 right-4 p-2 text-muted hover:text-fg transition-colors rounded-sm hover:bg-surface z-10"
         onClick={onClose}
         title={T.close}
+        aria-label={T.close}
       >
         <X size={22} />
       </button>
@@ -89,7 +90,8 @@ export default function Lightbox({ view, onClose }: Props) {
         <button
           className="absolute bottom-4 left-4 flex items-center gap-1.5 text-xs text-muted hover:text-fg px-2 py-1.5 border border-rim rounded-sm bg-surface/80 z-10"
           onClick={e => { e.stopPropagation(); resetZoom() }}
-          title={T.close}
+          title={T.reset}
+          aria-label={`${zoom.toFixed(1)}× — ${T.reset}`}
         >
           <ZoomIn size={13} />
           {zoom.toFixed(1)}× — {T.reset}

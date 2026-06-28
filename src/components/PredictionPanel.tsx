@@ -34,6 +34,30 @@ function buildPredictions(views: ProcessedView[], lang: Lang): Prediction[] {
         predictions.push({ level: 'warn', title: T.sobelWarnTitle, detail: T.sobelWarnDetail(score) })
       }
     }
+
+    if (view.definition.id === 'jpeg-ghost') {
+      if (view.score > THRESHOLDS['jpeg-ghost'].alert) {
+        predictions.push({ level: 'alert', title: T.jpegGhostHighTitle, detail: T.jpegGhostHighDetail(score) })
+      } else if (view.score > THRESHOLDS['jpeg-ghost'].warn) {
+        predictions.push({ level: 'warn', title: T.jpegGhostWarnTitle, detail: T.jpegGhostWarnDetail(score) })
+      }
+    }
+
+    if (view.definition.id === 'clone-detect') {
+      if (view.score > THRESHOLDS['clone-detect'].alert) {
+        predictions.push({ level: 'alert', title: T.cloneHighTitle, detail: T.cloneHighDetail(score) })
+      } else if (view.score > THRESHOLDS['clone-detect'].warn) {
+        predictions.push({ level: 'warn', title: T.cloneWarnTitle, detail: T.cloneWarnDetail(score) })
+      }
+    }
+
+    if (view.definition.id === 'fft-spectrum') {
+      if (view.score > THRESHOLDS['fft-spectrum'].alert) {
+        predictions.push({ level: 'alert', title: T.fftHighTitle, detail: T.fftHighDetail(score) })
+      } else if (view.score > THRESHOLDS['fft-spectrum'].warn) {
+        predictions.push({ level: 'warn', title: T.fftWarnTitle, detail: T.fftWarnDetail(score) })
+      }
+    }
   }
 
   if (predictions.length === 0) {

@@ -30,29 +30,46 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [downscaleNotice, setDownscaleNotice] = useState(false)
 
   const handleFile = useCallback((f: File) => {
+    setImageError(null)
+    setDownscaleNotice(false)
+
+    if (f.size > 100 * 1024 * 1024) {
+      setImageError(T.app.fileTooLarge)
+      return
+    }
+
     setFile(f)
     const objectUrl = URL.createObjectURL(f)
     const img = new Image()
     img.onload = async () => {
       setLoading(true)
       const start = performance.now()
-      const processed = await processImage(img)
+      const { views, wasDownscaled } = await processImage(img)
       const durationMs = Math.round(performance.now() - start)
       URL.revokeObjectURL(objectUrl)
-      setViews(processed)
+      setViews(views)
       setLoading(false)
+      if (wasDownscaled) setDownscaleNotice(true)
       posthog.capture('image_analyzed', {
         fileName: f.name,
         fileSize: f.size,
         fileType: f.type,
-        viewCount: processed.length,
+        viewCount: views.length,
         durationMs,
+        wasDownscaled,
       })
     }
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      setLoading(false)
+      setImageError(T.app.fileLoadError)
+    }
     img.src = objectUrl
-  }, [])
+  }, [T.app])
 
   const handleUrl = useCallback(async (url: string) => {
     setIsUrlModalOpen(false)
@@ -139,7 +156,7 @@ export default function App() {
           </div>
           {views.length > 0 && (
             <button
-              onClick={() => { setViews([]); setFile(null); setLightboxId(null); setUrlError(null) }}
+              onClick={() => { setViews([]); setFile(null); setLightboxId(null); setUrlError(null); setImageError(null); setDownscaleNotice(false) }}
               className="flex items-center gap-2 text-sm text-muted hover:text-fg transition-colors px-3 py-1.5 rounded-lg border border-rim hover:border-accent/50"
             >
               <RefreshCw size={13} />
@@ -156,10 +173,20 @@ export default function App() {
             <p className="text-sm">{T.app.loading}</p>
           </div>
         ) : views.length === 0 ? (
-          <DropZone onFile={handleFile} onOpenUrlModal={() => setIsUrlModalOpen(true)} />
+          <>
+            {imageError && (
+              <div className="max-w-xl mx-auto mb-4 px-4 py-3 rounded-xl border border-red-500/30 bg-red-950/20 text-sm text-red-300">
+                {imageError}
+              </div>
+            )}
+            <DropZone onFile={handleFile} onOpenUrlModal={() => setIsUrlModalOpen(true)} />
+          </>
         ) : (
           <>
             <VerdictBanner views={views} />
+            {downscaleNotice && (
+              <p className="text-xs text-muted mb-4">{T.app.downscaleNotice}</p>
+            )}
             <ViewGrid views={views} onPanelClick={setLightboxId} />
             <HistogramPanel dataUrl={views.find(v => v.definition.id === 'original')?.dataUrl ?? ''} />
             <PredictionPanel views={views} />
