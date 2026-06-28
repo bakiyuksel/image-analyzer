@@ -2,10 +2,15 @@ export const config = { runtime: 'edge' }
 
 export default async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url)
-  const path = url.pathname.replace(/^\/api\/ingest/, '')
-  const isStatic = path.startsWith('/static/')
-  const host = isStatic ? 'https://eu-assets.i.posthog.com' : 'https://eu.i.posthog.com'
-  const target = `${host}${path}${url.search}`
+  const slug = url.searchParams.get('__path') ?? ''
+  url.searchParams.delete('__path')
+
+  const isStatic = slug.startsWith('static/')
+  const host = isStatic
+    ? 'https://eu-assets.i.posthog.com'
+    : 'https://eu.i.posthog.com'
+
+  const target = `${host}/${slug}${url.search}`
 
   const res = await fetch(target, {
     method: req.method,
