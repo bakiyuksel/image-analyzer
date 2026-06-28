@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/react'
+import posthog from 'posthog-js'
 import { useLang } from '../lib/lang-context'
 import { translations } from '../lib/i18n'
 
@@ -9,7 +9,7 @@ export default function NotFound() {
   const path = window.location.pathname
 
   useEffect(() => {
-    Sentry.captureMessage(`404: ${path}`, 'warning')
+    posthog.capture('404', { path })
   }, [path])
 
   return (

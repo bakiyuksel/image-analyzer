@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import * as Sentry from '@sentry/react'
+import posthog from 'posthog-js'
 import { RefreshCw } from 'lucide-react'
 import type { ProcessedView } from './types/image'
 import { processImage } from './lib/transforms'
@@ -43,7 +43,7 @@ export default function App() {
       URL.revokeObjectURL(objectUrl)
       setViews(processed)
       setLoading(false)
-      Sentry.logger.info('Image analyzed', {
+      posthog.capture('image_analyzed', {
         fileName: f.name,
         fileSize: f.size,
         fileType: f.type,
