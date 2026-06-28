@@ -21,7 +21,8 @@ export function initPosthog() {
   if (!key) return
 
   posthog.init(key, {
-    api_host: 'https://eu.i.posthog.com',
+    api_host: '/ingest',
+    ui_host: 'https://eu.posthog.com',
     defaults: '2026-05-30',
     person_profiles: 'identified_only',
     capture_pageview: true,
